@@ -26,13 +26,13 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.CardViewHolder
     }
 
     @Override
-    public CardAdapter.CardViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public CardViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         return new CardViewHolder(LayoutInflater.from(parent.getContext()), parent);
     }
 
     @SuppressLint("DefaultLocale")
     @Override
-    public void onBindViewHolder(CardAdapter.CardViewHolder holder, int position) {
+    public void onBindViewHolder(CardViewHolder holder, int position) {
         holder.title.setText(cards.get(position).getTitle());
         holder.description.setText(cards.get(position).getDescription());
         holder.image.setImageResource(cards.get(position).getImage());
@@ -60,7 +60,7 @@ public class CardAdapter extends RecyclerView.Adapter<CardAdapter.CardViewHolder
             description = itemView.findViewById(R.id.card_description);
             image = itemView.findViewById(R.id.card_image);
             //comments = itemView.findViewById(R.id.card_comment);
-            likes = itemView.findViewById(R.id.card_likes);
+            likes = itemView.findViewById(R.id.card_likes_count);
 //            viewBackground = itemView.findViewById(R.id.view_background);
 //            viewForeground = itemView.findViewById(R.id.view_foreground);
 //            itemView.setOnClickListener(new View.OnClickListener() {

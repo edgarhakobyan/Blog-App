@@ -21,8 +21,9 @@ import android.view.MenuItem;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,
-        RecyclerItemTouchHelper.RecyclerItemTouchHelperListener {
+        implements NavigationView.OnNavigationItemSelectedListener {
+
+    //RecyclerItemTouchHelper.RecyclerItemTouchHelperListener
 
     private RecyclerView mRecyclerView;
     private ArrayList<Card> mCards;
@@ -133,27 +134,12 @@ public class MainActivity extends AppCompatActivity
 
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        //mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        //mRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
 
-        ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, this);
-        new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(mRecyclerView);
-
+        //ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, this);
+        //new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(mRecyclerView);
 
     }
 
-    @Override
-    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position) {
-//        if (viewHolder instanceof CardAdapter.CardViewHolder) {
-//            // get the removed item name to display it in snack bar
-//            String name = dishes.get(viewHolder.getAdapterPosition()).getTitle();
-//
-//            // backup of removed item for undo purpose
-//            final Dish deletedItem = dishes.get(viewHolder.getAdapterPosition());
-//            final int deletedIndex = viewHolder.getAdapterPosition();
-//
-//            // remove the item from recycler view
-//            dishesListAdapter.removeItem(viewHolder.getAdapterPosition());
-//        }
-    }
 }
