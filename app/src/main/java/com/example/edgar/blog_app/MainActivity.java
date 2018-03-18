@@ -3,11 +3,8 @@ package com.example.edgar.blog_app;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -26,8 +23,8 @@ public class MainActivity extends AppCompatActivity
     //RecyclerItemTouchHelper.RecyclerItemTouchHelperListener
 
     private RecyclerView mRecyclerView;
-    private ArrayList<Card> mCards;
-    private CardAdapter mCardAdapter;
+    public static ArrayList<Post> mPosts = new ArrayList<>();
+    private PostAdapter mPostAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,22 +112,36 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void initRecyclerView() {
-        Card card1 = new Card("First Card", "This is first card", R.drawable.food, "comment", 0);
-        Card card2 = new Card("Second Card", "This is second card", R.drawable.food, "comment", 0);
-        Card card3 = new Card("Third Card", "This is third card", R.drawable.food, "comment", 0);
-        Card card4 = new Card("Fourth Card", "This is fourth card", R.drawable.food, "comment", 0);
-        Card card5 = new Card("Fifth Card", "This is fifth card", R.drawable.food, "comment", 0);
+        Comment mComment1 = new Comment("Edgar", "this is a comment 1");
+        Comment mComment2 = new Comment("Edgar", "this is a comment 2");
 
-        mCards = new ArrayList<>();
-        mCards.add(card1);
-        mCards.add(card2);
-        mCards.add(card3);
-        mCards.add(card4);
-        mCards.add(card5);
+        Post post1 = new Post("First Post", "This is first cardjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj", R.drawable.food);
+        post1.setComments(mComment1);
+        post1.setComments(mComment2);
+        Post post2 = new Post("Second Post", "This is second card", R.drawable.food);
+        post2.setComments(mComment1);
+        post2.setComments(mComment2);
+        Post post3 = new Post("Third Post", "This is third card", R.drawable.food);
+        post3.setComments(mComment1);
+        post3.setComments(mComment2);
+        Post post4 = new Post("Fourth Post", "This is fourth card", R.drawable.food);
+        post4.setComments(mComment1);
+        post4.setComments(mComment2);
+        Post post5 = new Post("Fifth Post", "This is fifth card", R.drawable.food);
+        post5.setComments(mComment1);
+        post5.setComments(mComment2);
+
+
+        mPosts.add(post1);
+        mPosts.add(post2);
+        mPosts.add(post3);
+        mPosts.add(post4);
+        mPosts.add(post5);
+        mPosts.add(post5);
 
         mRecyclerView = (RecyclerView) findViewById(R.id.itemsRecyclerView);
-        mCardAdapter = new CardAdapter(MainActivity.this, mCards);
-        mRecyclerView.setAdapter(mCardAdapter);
+        mPostAdapter = new PostAdapter(MainActivity.this, mPosts);
+        mRecyclerView.setAdapter(mPostAdapter);
 
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));

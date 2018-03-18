@@ -1,22 +1,22 @@
 package com.example.edgar.blog_app;
 
+import java.util.ArrayList;
+
 /**
  * Created by edgar on 2/26/18.
  */
 
-public class Card {
+public class Post {
     private String title;
     private String description;
     private int image;
-    private String comment;
+    private ArrayList<Comment> comments = new ArrayList<>();
     private int likes;
 
-    public Card(String title, String description, int image, String comment, int likes) {
+    public Post(String title, String description, int image) {
         this.title = title;
         this.description = description;
         this.image = image;
-        this.comment = comment;
-        this.likes = likes;
     }
 
     public void setTitle(String title) {
@@ -31,8 +31,8 @@ public class Card {
         this.image = image;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setComments(Comment comment) {
+        comments.add(comment);
     }
 
     public void setLikes(int likes) {
@@ -51,8 +51,8 @@ public class Card {
         return image;
     }
 
-    public String getComment() {
-        return comment;
+    public ArrayList<Comment> getComments() {
+        return comments;
     }
 
     public int getLikes() {
