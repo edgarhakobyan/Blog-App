@@ -1,4 +1,4 @@
-package com.example.edgar.blog_app;
+package com.example.edgar.blog_app.models;
 
 import java.util.ArrayList;
 

@@ -23,16 +23,14 @@
                 android:id="@+id/post_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:text="Title" />
+                android:padding="10dp" />
 
             <TextView
                 android:id="@+id/post_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:maxHeight="60dp"
-                android:padding="10dp"
-                android:text="Description" />
+                android:padding="10dp" />
 
             <ImageView
                 android:id="@+id/post_image"
@@ -49,7 +47,8 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:background="@drawable/like"/>
+                    android:background="@drawable/like"
+                    android:contentDescription="@string/like_in_post" />
 
                 <TextView
                     android:id="@+id/post_likes_count"
@@ -61,7 +60,8 @@
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    app:srcCompat="@drawable/dislike" />
+                    app:srcCompat="@drawable/dislike"
+                    android:contentDescription="@string/dislike_in_post" />
 
                 <TextView
                     android:id="@+id/post_dislikes_count"
@@ -74,7 +74,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:textAlignment="viewEnd"
-                    android:text="Comments" />
+                    android:text="@string/comments" />
 
             </LinearLayout>
 
@@ -97,7 +97,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:textAlignment="center"
-                    android:text="Like" />
+                    android:text="@string/like" />
 
                 <TextView
                     android:id="@+id/post_dislike"
@@ -105,7 +105,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:textAlignment="center"
-                    android:text="Dislike" />
+                    android:text="@string/dislike" />
 
             </LinearLayout>
 

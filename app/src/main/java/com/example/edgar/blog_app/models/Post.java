@@ -1,4 +1,6 @@
-package com.example.edgar.blog_app;
+package com.example.edgar.blog_app.models;
+
+import com.example.edgar.blog_app.models.Comment;
 
 import java.util.ArrayList;
 

@@ -1,12 +1,12 @@
-package com.example.edgar.blog_app;
+package com.example.edgar.blog_app.adapters;
 
-import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.example.edgar.blog_app.models.Comment;
+import com.example.edgar.blog_app.R;
 
 import java.util.ArrayList;
 

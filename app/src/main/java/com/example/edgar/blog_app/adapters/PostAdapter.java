@@ -1,4 +1,4 @@
-package com.example.edgar.blog_app;
+package com.example.edgar.blog_app.adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -9,6 +9,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.example.edgar.blog_app.activities.CommentsActivity;
+import com.example.edgar.blog_app.models.Post;
+import com.example.edgar.blog_app.R;
+import com.example.edgar.blog_app.activities.UserActivity;
 
 import java.util.ArrayList;
 

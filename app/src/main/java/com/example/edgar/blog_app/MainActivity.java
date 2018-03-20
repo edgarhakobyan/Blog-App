@@ -15,6 +15,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.example.edgar.blog_app.adapters.PostAdapter;
+import com.example.edgar.blog_app.models.Comment;
+import com.example.edgar.blog_app.models.Post;
+
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity

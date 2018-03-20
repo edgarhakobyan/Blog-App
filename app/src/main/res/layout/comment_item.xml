@@ -12,14 +12,12 @@
     <TextView
         android:id="@+id/comment_author"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="TextView" />
+        android:layout_height="wrap_content" />
 
     <TextView
         android:id="@+id/comment"
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="TextView"
         android:textAlignment="viewEnd"/>
 </LinearLayout>

@@ -1,4 +1,4 @@
-package com.example.edgar.blog_app;
+package com.example.edgar.blog_app.activities;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -8,6 +8,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+
+import com.example.edgar.blog_app.models.Comment;
+import com.example.edgar.blog_app.MainActivity;
+import com.example.edgar.blog_app.R;
+import com.example.edgar.blog_app.adapters.CommentAdapter;
 
 import java.util.ArrayList;
 

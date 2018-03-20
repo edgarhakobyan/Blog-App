@@ -1,4 +1,4 @@
-package com.example.edgar.blog_app;
+package com.example.edgar.blog_app.models;
 
 /**
  * Created by edgar on 3/1/18.

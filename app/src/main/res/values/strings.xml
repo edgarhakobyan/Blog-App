@@ -5,4 +5,25 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
+
+    <!--Comments Activity-->
+    <string name="write_a_comment">Write a comment</string>
+    <string name="send_comment">Send comment</string>
+
+    <!--User Activity-->
+    <string name="user_view_image">User view image</string>
+    <string name="about">About</string>
+    <string name="photos">Photos</string>
+
+    <!--Nav bar-->
+    <string name="user_image_nav_bar">User image nav bar</string>
+    <string name="user_name_nav_bar">Android Studio</string>
+    <string name="user_email_nav_bar">android.studio@android.com</string>
+
+    <!--Post item-->
+    <string name="comments">Comments</string>
+    <string name="like">Like</string>
+    <string name="dislike">Dislike</string>
+    <string name="like_in_post">Like in post</string>
+    <string name="dislike_in_post">Dislike in post</string>
 </resources>
