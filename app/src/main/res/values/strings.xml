@@ -19,6 +19,9 @@
     <string name="user_image_nav_bar">User image nav bar</string>
     <string name="user_name_nav_bar">Android Studio</string>
     <string name="user_email_nav_bar">android.studio@android.com</string>
+    <string name="account_settings">Account Settings</string>
+    <string name="logout">Logout</string>
+    <string name="communicate">Communicate</string>
 
     <!--Post item-->
     <string name="comments">Comments</string>
@@ -26,4 +29,20 @@
     <string name="dislike">Dislike</string>
     <string name="like_in_post">Like in post</string>
     <string name="dislike_in_post">Dislike in post</string>
+
+    <!--Login/Register page-->
+    <string name="welcome_to_photo_blog">Welcome To Photo Blog</string>
+    <string name="your_email">Your email…</string>
+    <string name="password">Password…</string>
+    <string name="login_btn_title">LogIn</string>
+    <string name="need_a_new_account">Need A New Account ?</string>
+    <string name="confirm_password">Confirm Password…</string>
+    <string name="register_btn_title">Register</string>
+    <string name="already_have_an_account">Already have an account ?</string>
+
+    <!--Setup page-->
+    <string name="save_account_settings">Save Account Settings</string>
+    <string name="your_name">Your Name</string>
+    <string name="setup_user_image">Setup image</string>
+
 </resources>
