@@ -16,14 +16,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.example.edgar.blog_app.activities.LoginActivity;
+import com.example.edgar.blog_app.activities.PostActivity;
 import com.example.edgar.blog_app.activities.SetupActivity;
 import com.example.edgar.blog_app.adapters.PostAdapter;
 import com.example.edgar.blog_app.models.Comment;
 import com.example.edgar.blog_app.models.Post;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 
@@ -32,11 +38,16 @@ public class MainActivity extends AppCompatActivity
 
     //RecyclerItemTouchHelper.RecyclerItemTouchHelperListener
 
+    FloatingActionButton addPostBtn;
+
     private RecyclerView mRecyclerView;
     public static ArrayList<Post> mPosts = new ArrayList<>();
     private PostAdapter mPostAdapter;
 
     private FirebaseAuth mAuth;
+    private FirebaseFirestore firebaseFirestore;
+
+    private String currentUserId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,13 +58,14 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         mAuth = FirebaseAuth.getInstance();
+        firebaseFirestore = FirebaseFirestore.getInstance();
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        addPostBtn = (FloatingActionButton) findViewById(R.id.fab);
+        addPostBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+               Intent intent = new Intent(MainActivity.this, PostActivity.class);
+               startActivity(intent);
             }
         });
 
@@ -75,6 +87,23 @@ public class MainActivity extends AppCompatActivity
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser == null) {
             sendToLogin();
+        } else {
+            currentUserId = mAuth.getCurrentUser().getUid();
+            firebaseFirestore.collection("Users").document(currentUserId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        if (!task.getResult().exists()) {
+                            Intent intent = new Intent(MainActivity.this, SetupActivity.class);
+                            startActivity(intent);
+                            finish();
+                        }
+                    } else {
+                        String error = task.getException().getMessage();
+                        Toast.makeText(MainActivity.this, "Error: " + error, Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
         }
     }
 

@@ -45,4 +45,9 @@
     <string name="your_name">Your Name</string>
     <string name="setup_user_image">Setup image</string>
 
+    <!--Add new post-->
+    <string name="add_description">Add description</string>
+    <string name="add_post">Add Post</string>
+    <string name="post_image">Post image</string>
+
 </resources>
