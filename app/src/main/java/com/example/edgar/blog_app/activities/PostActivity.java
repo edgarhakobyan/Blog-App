@@ -1,6 +1,7 @@
 package com.example.edgar.blog_app.activities;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -16,6 +17,8 @@ import android.widget.Toast;
 import com.example.edgar.blog_app.MainActivity;
 import com.example.edgar.blog_app.R;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
@@ -27,8 +30,14 @@ import com.google.firebase.storage.UploadTask;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
+
+import id.zelory.compressor.Compressor;
 
 public class PostActivity extends AppCompatActivity {
 
@@ -44,15 +53,17 @@ public class PostActivity extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
     private FirebaseFirestore firebaseFirestore;
 
+    private Bitmap compressedImageFile;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post);
 
-        postImage = (ImageView) findViewById(R.id.post_image);
-        postDescription = (EditText) findViewById(R.id.post_description);
-        addPostBtn = (Button) findViewById(R.id.add_post_btn);
-        postProgress = (ProgressBar) findViewById(R.id.piost_progressbar);
+        postImage = (ImageView) findViewById(R.id.new_post_image);
+        postDescription = (EditText) findViewById(R.id.new_post_description);
+        addPostBtn = (Button) findViewById(R.id.add_new_post_btn);
+        postProgress = (ProgressBar) findViewById(R.id.new_post_progressbar);
 
         // Get Firebase data
         storageReference = FirebaseStorage.getInstance().getReference();
@@ -77,35 +88,71 @@ public class PostActivity extends AppCompatActivity {
             public void onClick(View v) {
                 final String desc = postDescription.getText().toString();
                 if (!TextUtils.isEmpty(desc) && postImageUri != null) {
+
                     postProgress.setVisibility(View.VISIBLE);
-                    String randomName = FieldValue.serverTimestamp().toString();
+
+                    final String randomName = UUID.randomUUID().toString();
+
                     StorageReference filePath = storageReference.child("postImages").child(randomName + ".jpg");
                     filePath.putFile(postImageUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                            final String downloadUri = task.getResult().getDownloadUrl().toString();
+
                             if (task.isSuccessful()) {
-                                String downloadUri = task.getResult().getDownloadUrl().toString();
 
-                                Map<String, Object> postMap = new HashMap<>();
-                                postMap.put("imageUrl", downloadUri);
-                                postMap.put("desc", desc);
-                                postMap.put("userId", currentUserId);
-                                postMap.put("timestamp", FieldValue.serverTimestamp());
+                                File newThumbFile = new File(postImageUri.getPath());
+                                try {
+                                    compressedImageFile = new Compressor(PostActivity.this)
+                                            .setMaxHeight(100)
+                                            .setMaxWidth(100)
+                                            .setQuality(1)
+                                            .compressToBitmap(newThumbFile);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
 
-                                firebaseFirestore.collection("Posts").add(postMap).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                compressedImageFile.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                                byte[] thumbData = baos.toByteArray();
+
+                                UploadTask uploadTask = storageReference.child("postImages/thumbs")
+                                        .child(randomName + ".jpg").putBytes(thumbData);
+
+                                uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                                     @Override
-                                    public void onComplete(@NonNull Task<DocumentReference> task) {
-                                        if (task.isSuccessful()) {
-                                            Toast.makeText(PostActivity.this, "Post is added ", Toast.LENGTH_LONG).show();
-                                            Intent intent = new Intent(PostActivity.this, MainActivity.class);
-                                            startActivity(intent);
-                                            finish();
-                                        } else {
+                                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                        String downloadThumbUri = taskSnapshot.getDownloadUrl().toString();
 
-                                        }
-                                        postProgress.setVisibility(View.INVISIBLE);
+                                        Map<String, Object> postMap = new HashMap<>();
+                                        postMap.put("imageUrl", downloadUri);
+                                        postMap.put("imageThumb", downloadThumbUri);
+                                        postMap.put("description", desc);
+                                        postMap.put("userId", currentUserId);
+                                        //postMap.put("timestamp", FieldValue.serverTimestamp());
+
+                                        firebaseFirestore.collection("Posts").add(postMap).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<DocumentReference> task) {
+                                                if (task.isSuccessful()) {
+                                                    Toast.makeText(PostActivity.this, "Post was added ", Toast.LENGTH_LONG).show();
+                                                    Intent intent = new Intent(PostActivity.this, MainActivity.class);
+                                                    startActivity(intent);
+                                                    finish();
+                                                } else {
+
+                                                }
+                                                postProgress.setVisibility(View.INVISIBLE);
+                                            }
+                                        });
+                                    }
+                                }).addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        //Error handling
                                     }
                                 });
+
                             } else {
                                 postProgress.setVisibility(View.INVISIBLE);
                             }
@@ -129,4 +176,5 @@ public class PostActivity extends AppCompatActivity {
             }
         }
     }
+
 }

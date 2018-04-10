@@ -104,7 +104,7 @@ public class SetupActivity extends AppCompatActivity {
                     setupProgress.setVisibility(View.VISIBLE);
                     if (isChanged) {
                         final String userId = firebaseAuth.getCurrentUser().getUid();
-                        StorageReference imagePath = storageReference.child("profile_images").child(userId + ".jpg");
+                        StorageReference imagePath = storageReference.child("profileImages").child(userId + ".jpg");
                         imagePath.putFile(mainImageURI).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                             @Override
                             public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {

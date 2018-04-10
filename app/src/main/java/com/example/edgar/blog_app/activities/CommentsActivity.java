@@ -23,9 +23,9 @@ public class CommentsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_comments);
 
-        Intent intent = getIntent();
-        final int position = intent.getIntExtra("position", 0);
-        ArrayList<Comment> mComments = MainActivity.mPosts.get(position).getComments();
+//        Intent intent = getIntent();
+//        final int position = intent.getIntExtra("position", 0);
+//        ArrayList<Comment> mComments = MainActivity.mPosts.get(position).getComments();
 
 //        Comment mComment1 = new Comment("Edgar", "this is a comment");
 //        Comment mComment2 = new Comment("Edgar", "this is a comment");
@@ -36,24 +36,24 @@ public class CommentsActivity extends AppCompatActivity {
 //        mComments.add(mComment2);
 //        mComments.add(mComment3);
 
-        RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.commentsRecyclerView);
-
-        CommentAdapter mCommentAdapter = new CommentAdapter(mComments);
-        mRecyclerView.setAdapter(mCommentAdapter);
-
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        final EditText newComment = (EditText) findViewById(R.id.new_comment);
-        ImageButton sendComment = (ImageButton) findViewById(R.id.send_comment);
-        sendComment.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Comment mComment = new Comment("Edgar", newComment.getText().toString());
-                MainActivity.mPosts.get(position).setComments(mComment);
-                Intent i = new Intent(CommentsActivity.this, MainActivity.class);
-                startActivity(i);
-            }
-        });
+//        RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.commentsRecyclerView);
+//
+//        CommentAdapter mCommentAdapter = new CommentAdapter(mComments);
+//        mRecyclerView.setAdapter(mCommentAdapter);
+//
+//        mRecyclerView.setHasFixedSize(true);
+//        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+//
+//        final EditText newComment = (EditText) findViewById(R.id.new_comment);
+//        ImageButton sendComment = (ImageButton) findViewById(R.id.send_comment);
+//        sendComment.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Comment mComment = new Comment("Edgar", newComment.getText().toString());
+//                MainActivity.mPosts.get(position).setComments(mComment);
+//                Intent i = new Intent(CommentsActivity.this, MainActivity.class);
+//                startActivity(i);
+//            }
+//        });
     }
 }

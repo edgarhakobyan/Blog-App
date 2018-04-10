@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -18,18 +17,23 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.example.edgar.blog_app.activities.AccountActivity;
 import com.example.edgar.blog_app.activities.LoginActivity;
+import com.example.edgar.blog_app.activities.NotificationActivity;
 import com.example.edgar.blog_app.activities.PostActivity;
 import com.example.edgar.blog_app.activities.SetupActivity;
 import com.example.edgar.blog_app.adapters.PostAdapter;
-import com.example.edgar.blog_app.models.Comment;
 import com.example.edgar.blog_app.models.Post;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
@@ -40,14 +44,16 @@ public class MainActivity extends AppCompatActivity
 
     FloatingActionButton addPostBtn;
 
-    private RecyclerView mRecyclerView;
-    public static ArrayList<Post> mPosts = new ArrayList<>();
+    private RecyclerView mPostListView;
+
+    private static ArrayList<Post> mPosts = new ArrayList<>();
     private PostAdapter mPostAdapter;
 
     private FirebaseAuth mAuth;
     private FirebaseFirestore firebaseFirestore;
 
     private String currentUserId;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,8 +83,6 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
-        initRecyclerView();
     }
 
     @Override
@@ -97,6 +101,8 @@ public class MainActivity extends AppCompatActivity
                             Intent intent = new Intent(MainActivity.this, SetupActivity.class);
                             startActivity(intent);
                             finish();
+                        } else {
+                            initRecyclerView();
                         }
                     } else {
                         String error = task.getException().getMessage();
@@ -146,11 +152,16 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         switch (id) {
-            case R.id.nav_camera:
+            case R.id.nav_home:
+
                 break;
             case R.id.nav_gallery:
                 break;
-            case R.id.nav_slideshow:
+            case R.id.nav_notification:
+                sendToNotification();
+                break;
+            case R.id.nav_account:
+                sendToAccount();
                 break;
             case R.id.nav_account_settings:
                 sendToSetup();
@@ -168,46 +179,76 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void initRecyclerView() {
-        Comment mComment1 = new Comment("Edgar", "this is a comment 1");
-        Comment mComment2 = new Comment("Edgar", "this is a comment 2");
+        mPosts = new ArrayList<>();
 
-        Post post1 = new Post("First Post", "This is first cardjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj", R.drawable.food);
-        post1.setComments(mComment1);
-        post1.setComments(mComment2);
-        Post post2 = new Post("Second Post", "This is second card", R.drawable.food);
-        post2.setComments(mComment1);
-        post2.setComments(mComment2);
-        Post post3 = new Post("Third Post", "This is third card", R.drawable.food);
-        post3.setComments(mComment1);
-        post3.setComments(mComment2);
-        Post post4 = new Post("Fourth Post", "This is fourth card", R.drawable.food);
-        post4.setComments(mComment1);
-        post4.setComments(mComment2);
-        Post post5 = new Post("Fifth Post", "This is fifth card", R.drawable.food);
-        post5.setComments(mComment1);
-        post5.setComments(mComment2);
+        mPostAdapter = new PostAdapter(mPosts);
 
+        mPostListView = (RecyclerView) findViewById(R.id.post_list_view);
+        mPostListView.setLayoutManager(new LinearLayoutManager(this));
+        mPostListView.setAdapter(mPostAdapter);
 
-        mPosts.add(post1);
-        mPosts.add(post2);
-        mPosts.add(post3);
-        mPosts.add(post4);
-        mPosts.add(post5);
-        mPosts.add(post5);
+        //Get posts
+        firebaseFirestore.collection("Posts").addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
 
-        mRecyclerView = (RecyclerView) findViewById(R.id.itemsRecyclerView);
-        mPostAdapter = new PostAdapter(MainActivity.this, mPosts);
-        mRecyclerView.setAdapter(mPostAdapter);
+                for (DocumentChange doc: queryDocumentSnapshots.getDocumentChanges()) {
+                    if (doc.getType() == DocumentChange.Type.ADDED) {
 
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        //mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        //mRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+                        Post post = doc.getDocument().toObject(Post.class);
+                        mPosts.add(post);
 
-        //ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, this);
-        //new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(mRecyclerView);
+                        mPostAdapter.notifyDataSetChanged();
+
+                    }
+                }
+
+            }
+        });
 
     }
+
+//    private void initRecyclerView() {
+//        Comment mComment1 = new Comment("Edgar", "this is a comment 1");
+//        Comment mComment2 = new Comment("Edgar", "this is a comment 2");
+//
+//        Post post1 = new Post("First Post", "This is first cardjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj", R.drawable.food);
+//        post1.setComments(mComment1);
+//        post1.setComments(mComment2);
+//        Post post2 = new Post("Second Post", "This is second card", R.drawable.food);
+//        post2.setComments(mComment1);
+//        post2.setComments(mComment2);
+//        Post post3 = new Post("Third Post", "This is third card", R.drawable.food);
+//        post3.setComments(mComment1);
+//        post3.setComments(mComment2);
+//        Post post4 = new Post("Fourth Post", "This is fourth card", R.drawable.food);
+//        post4.setComments(mComment1);
+//        post4.setComments(mComment2);
+//        Post post5 = new Post("Fifth Post", "This is fifth card", R.drawable.food);
+//        post5.setComments(mComment1);
+//        post5.setComments(mComment2);
+//
+//
+//        mPosts.add(post1);
+//        mPosts.add(post2);
+//        mPosts.add(post3);
+//        mPosts.add(post4);
+//        mPosts.add(post5);
+//        mPosts.add(post5);
+//
+//        mRecyclerView = (RecyclerView) findViewById(R.id.itemsRecyclerView);
+//        mPostAdapter = new PostAdapter(MainActivity.this, mPosts);
+//        mRecyclerView.setAdapter(mPostAdapter);
+//
+//        mRecyclerView.setHasFixedSize(true);
+//        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+//        //mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+//        //mRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+//
+//        //ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, this);
+//        //new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(mRecyclerView);
+//
+//    }
 
     private void logOut() {
         mAuth.signOut();
@@ -222,6 +263,18 @@ public class MainActivity extends AppCompatActivity
 
     private void sendToSetup() {
         Intent intent = new Intent(MainActivity.this, SetupActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    private void sendToNotification() {
+        Intent intent = new Intent(MainActivity.this, NotificationActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    private void sendToAccount() {
+        Intent intent = new Intent(MainActivity.this, AccountActivity.class);
         startActivity(intent);
         finish();
     }
