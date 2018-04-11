@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.example.edgar.blog_app.Constants;
 import com.example.edgar.blog_app.MainActivity;
 import com.example.edgar.blog_app.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -73,7 +74,7 @@ public class SetupActivity extends AppCompatActivity {
         setupBtn.setEnabled(false);
 
         // Get current user data
-        firebaseFirestore.collection("Users").document(userId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+        firebaseFirestore.collection(Constants.USERS).document(userId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @SuppressLint("CheckResult")
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -168,7 +169,7 @@ public class SetupActivity extends AppCompatActivity {
         userMap.put("name", userName);
         userMap.put("image", downloadUri.toString());
 
-        firebaseFirestore.collection("Users").document(userId).set(userMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+        firebaseFirestore.collection(Constants.USERS).document(userId).set(userMap).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if(task.isSuccessful()){

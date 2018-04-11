@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.example.edgar.blog_app.Constants;
 import com.example.edgar.blog_app.MainActivity;
 import com.example.edgar.blog_app.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -129,9 +130,9 @@ public class PostActivity extends AppCompatActivity {
                                         postMap.put("imageThumb", downloadThumbUri);
                                         postMap.put("description", desc);
                                         postMap.put("userId", currentUserId);
-                                        //postMap.put("timestamp", FieldValue.serverTimestamp());
+                                        postMap.put("timestamp", FieldValue.serverTimestamp());
 
-                                        firebaseFirestore.collection("Posts").add(postMap).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                                        firebaseFirestore.collection(Constants.POSTS).add(postMap).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
                                             @Override
                                             public void onComplete(@NonNull Task<DocumentReference> task) {
                                                 if (task.isSuccessful()) {

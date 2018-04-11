@@ -17,16 +17,16 @@ public class Post {
     private String description;
     private String imageUrl;
     private String imageThumb;
-    //private Date timestamp;
+    private Date timestamp;
 
     public Post() {}
 
-    public Post(String userId, String imageUrl, String description, String imageThumb) {
+    public Post(String userId, String imageUrl, String description, String imageThumb, Date timestamp) {
         this.userId = userId;
         this.imageUrl = imageUrl;
         this.description = description;
         this.imageThumb = imageThumb;
-        //this.timestamp = timestamp;
+        this.timestamp = timestamp;
     }
 
     public void setUserId(String userId) {
@@ -45,9 +45,9 @@ public class Post {
         this.imageThumb = imageThumb;
     }
 
-//    public void setTimestamp(Date timestamp) {
-//        this.timestamp = timestamp;
-//    }
+    public void setTimestamp(Date timestamp) {
+        this.timestamp = timestamp;
+    }
 
     public String getUserId() {
         return userId;
@@ -65,9 +65,9 @@ public class Post {
         return imageThumb;
     }
 
-//    public Date getTimestamp() {
-//        return timestamp;
-//    }
+    public Date getTimestamp() {
+        return timestamp;
+    }
 
     //    private int image;
 //    private ArrayList<Comment> comments = new ArrayList<>();

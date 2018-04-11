@@ -33,6 +33,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
@@ -53,6 +54,10 @@ public class MainActivity extends AppCompatActivity
     private FirebaseFirestore firebaseFirestore;
 
     private String currentUserId;
+
+    private DocumentSnapshot lastVisible;
+
+    private Boolean isFirstPageFirstLoad = true;
 
 
     @Override
@@ -83,6 +88,10 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        if (mAuth.getCurrentUser() != null) {
+            initRecyclerView();
+        }
     }
 
     @Override
@@ -93,7 +102,7 @@ public class MainActivity extends AppCompatActivity
             sendToLogin();
         } else {
             currentUserId = mAuth.getCurrentUser().getUid();
-            firebaseFirestore.collection("Users").document(currentUserId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            firebaseFirestore.collection(Constants.USERS).document(currentUserId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                     if (task.isSuccessful()) {
@@ -101,8 +110,6 @@ public class MainActivity extends AppCompatActivity
                             Intent intent = new Intent(MainActivity.this, SetupActivity.class);
                             startActivity(intent);
                             finish();
-                        } else {
-                            initRecyclerView();
                         }
                     } else {
                         String error = task.getException().getMessage();
@@ -187,25 +194,79 @@ public class MainActivity extends AppCompatActivity
         mPostListView.setLayoutManager(new LinearLayoutManager(this));
         mPostListView.setAdapter(mPostAdapter);
 
-        //Get posts
-        firebaseFirestore.collection("Posts").addSnapshotListener(new EventListener<QuerySnapshot>() {
+        if (mAuth.getCurrentUser() != null) {
+
+            mPostListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                    super.onScrolled(recyclerView, dx, dy);
+
+                    Boolean reachedBottom = !mPostListView.canScrollVertically(1);
+                    if (reachedBottom) {
+                        String desc = lastVisible.getString(Constants.DESCRIPTION);
+                        Toast.makeText(MainActivity.this, "Reached: " + desc, Toast.LENGTH_LONG).show();
+                        loadMorePosts();
+                    }
+                }
+            });
+
+            // Get posts by order timestamp
+            Query firstQuery = firebaseFirestore.collection(Constants.POSTS)
+                    .orderBy(Constants.TIMESTAMP, Query.Direction.DESCENDING)
+                    .limit(3);
+            firstQuery.addSnapshotListener(this, new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
+
+                    if (isFirstPageFirstLoad && queryDocumentSnapshots.size() > 0) {
+                        lastVisible = queryDocumentSnapshots.getDocuments().get(queryDocumentSnapshots.size() - 1);
+                    }
+
+                    for (DocumentChange doc: queryDocumentSnapshots.getDocumentChanges()) {
+                        if (doc.getType() == DocumentChange.Type.ADDED) {
+
+                            Post post = doc.getDocument().toObject(Post.class);
+                            if (isFirstPageFirstLoad) {
+                                mPosts.add(post);
+                            } else {
+                                mPosts.add(0, post);
+                            }
+                            mPostAdapter.notifyDataSetChanged();
+
+                        }
+                    }
+                    isFirstPageFirstLoad = false;
+                }
+            });
+        }
+    }
+
+    private void loadMorePosts() {
+        Query nextQuery = firebaseFirestore.collection(Constants.POSTS)
+                .orderBy(Constants.TIMESTAMP, Query.Direction.DESCENDING)
+                .startAfter(lastVisible)
+                .limit(3);
+
+        nextQuery.addSnapshotListener(this, new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
 
-                for (DocumentChange doc: queryDocumentSnapshots.getDocumentChanges()) {
-                    if (doc.getType() == DocumentChange.Type.ADDED) {
+                if (!queryDocumentSnapshots.isEmpty()) {
+                    lastVisible = queryDocumentSnapshots.getDocuments().get(queryDocumentSnapshots.size() - 1);
+                    for (DocumentChange doc : queryDocumentSnapshots.getDocumentChanges()) {
+                        if (doc.getType() == DocumentChange.Type.ADDED) {
 
-                        Post post = doc.getDocument().toObject(Post.class);
-                        mPosts.add(post);
+                            Post post = doc.getDocument().toObject(Post.class);
+                            mPosts.add(post);
 
-                        mPostAdapter.notifyDataSetChanged();
+                            mPostAdapter.notifyDataSetChanged();
 
+                        }
                     }
                 }
 
             }
         });
-
     }
 
 //    private void initRecyclerView() {
@@ -264,19 +325,19 @@ public class MainActivity extends AppCompatActivity
     private void sendToSetup() {
         Intent intent = new Intent(MainActivity.this, SetupActivity.class);
         startActivity(intent);
-        finish();
+        //finish();
     }
 
     private void sendToNotification() {
         Intent intent = new Intent(MainActivity.this, NotificationActivity.class);
         startActivity(intent);
-        finish();
+        //finish();
     }
 
     private void sendToAccount() {
         Intent intent = new Intent(MainActivity.this, AccountActivity.class);
         startActivity(intent);
-        finish();
+        //finish();
     }
 
 }
