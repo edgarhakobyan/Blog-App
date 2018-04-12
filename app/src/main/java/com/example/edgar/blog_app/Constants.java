@@ -13,7 +13,19 @@ public class Constants {
     // Firebase Posts keys
     public static final String DESCRIPTION = "description";
     public static final String TIMESTAMP = "timestamp";
+    public static final String LIKES = "Likes";
+
+    // Firebase Storage keys
+    public static final String POST_IMAGES = "postImages";
+    public static final String IMAGE_THUMBS = "postImages/thumbs";
 
     // Date format
     public static final String DATE_FORMAT = "MM/dd/yyyy";
+
+    public static final String POST_ID = "postId";
+    public static final String USER_ID = "userId";
+
+    //Comments
+    public static final String COMMENTS = "Comments";
+    public static final String MESSAGE = "message";
 }

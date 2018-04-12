@@ -2,6 +2,8 @@ package com.example.edgar.blog_app.adapters;
 
 
 import android.content.Context;
+import android.content.Intent;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
@@ -10,19 +12,29 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.edgar.blog_app.Constants;
+import com.example.edgar.blog_app.activities.CommentsActivity;
 import com.example.edgar.blog_app.models.Post;
 import com.example.edgar.blog_app.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentListenOptions;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -37,6 +49,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
     private Context mContext;
 
     private FirebaseFirestore mFirebaseFirestore;
+    private FirebaseAuth mFirebaseAuth;
 
     public PostAdapter(ArrayList<Post> posts) {
         this.posts = posts;
@@ -48,20 +61,29 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.post_item, parent, false);
         mContext = parent.getContext();
         mFirebaseFirestore = FirebaseFirestore.getInstance();
+        mFirebaseAuth = FirebaseAuth.getInstance();
         return new PostViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull final PostViewHolder holder, int position) {
 
+        holder.setIsRecyclable(false);
+
+        final String postId = posts.get(position).PostId;
+        final String currentUserId = mFirebaseAuth.getCurrentUser().getUid();
+
         String desc = posts.get(position).getDescription();
         holder.setDescriptionText(desc);
 
         String imageUrl = posts.get(position).getImageUrl();
-        holder.setPostImage(imageUrl);
+        String thumbUri = posts.get(position).getImageThumb();
+        holder.setPostImage(imageUrl, thumbUri);
 
         String userId = posts.get(position).getUserId();
-        mFirebaseFirestore.collection(Constants.USERS).document(userId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+
+        mFirebaseFirestore.collection(Constants.USERS).document(userId).get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
@@ -73,9 +95,81 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             }
         });
 
-        long milliseconds = posts.get(position).getTimestamp().getTime();
-        String dateString = DateFormat.format(Constants.DATE_FORMAT, new Date(milliseconds)).toString();
-        holder.setDate(dateString);
+        try {
+            long milliseconds = posts.get(position).getTimestamp().getTime();
+            String dateString = DateFormat.format(Constants.DATE_FORMAT, new Date(milliseconds)).toString();
+            holder.setDate(dateString);
+        } catch (Exception e) {
+            Toast.makeText(mContext, "Exception : " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+
+        // Get Likes count
+        mFirebaseFirestore.collection(Constants.POSTS + "/" + postId + "/" + Constants.LIKES)
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
+                if (queryDocumentSnapshots.isEmpty()) {
+                    holder.updatePostLikesCount(0);
+                } else {
+                    int count = queryDocumentSnapshots.size();
+                    holder.updatePostLikesCount(count);
+                }
+            }
+        });
+
+        //Get Likes
+        mFirebaseFirestore.collection(Constants.POSTS + "/" + postId + "/" + Constants.LIKES)
+                .document(currentUserId).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(DocumentSnapshot documentSnapshot, FirebaseFirestoreException e) {
+
+                if (documentSnapshot.exists()) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        holder.postLikeImage.setImageDrawable(mContext.getDrawable(R.mipmap.ic_like_accent));
+                    }
+                } else {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        holder.postLikeImage.setImageDrawable(mContext.getDrawable(R.mipmap.ic_like_gray));
+                    }
+                }
+            }
+        });
+
+        // Likes feature
+        holder.postLikeImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                mFirebaseFirestore.collection(Constants.POSTS + "/" + postId + "/" + Constants.LIKES)
+                        .document(currentUserId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+
+                        if (!task.getResult().exists()) {
+                            Map<String, Object> likesMap = new HashMap<>();
+                            likesMap.put(Constants.TIMESTAMP, FieldValue.serverTimestamp());
+
+                            mFirebaseFirestore.collection(Constants.POSTS + "/" + postId + "/" + Constants.LIKES)
+                                    .document(currentUserId).set(likesMap);
+                        } else {
+                            mFirebaseFirestore.collection(Constants.POSTS + "/" + postId + "/" + Constants.LIKES)
+                                    .document(currentUserId).delete();
+                        }
+
+                    }
+                });
+            }
+        });
+
+        //Comments feature
+        holder.postCommentsImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, CommentsActivity.class);
+                intent.putExtra(Constants.POST_ID, postId);
+                mContext.startActivity(intent);
+            }
+        });
 
     }
 
@@ -89,14 +183,22 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         private View mView;
 
         private TextView postDescriptionView;
-        private ImageView postImageView;
         private TextView postDateView;
-        private CircleImageView postUserImageView;
         private TextView postUserNameView;
+        private TextView postLikeCount;
+
+        private ImageView postImageView;
+        private ImageView postLikeImage;
+        private ImageView postCommentsImageView;
+
+        private CircleImageView postUserImageView;
 
         public PostViewHolder(View itemView) {
             super(itemView);
             mView = itemView;
+
+            postLikeImage = mView.findViewById(R.id.post_like_image);
+            postCommentsImageView = mView.findViewById(R.id.post_comments_btn);
         }
 
         public void setDescriptionText(String desc) {
@@ -104,11 +206,15 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             postDescriptionView.setText(desc);
         }
 
-        public void setPostImage(String downloadUrl) {
+        public void setPostImage(String downloadUrl, String thumbUri) {
             postImageView = mView.findViewById(R.id.post_image);
+
             RequestOptions placeholderOption = new RequestOptions();
             placeholderOption.placeholder(R.drawable.post_placeholder);
-            Glide.with(mContext).applyDefaultRequestOptions(placeholderOption).load(downloadUrl).into(postImageView);
+
+            Glide.with(mContext).applyDefaultRequestOptions(placeholderOption).load(downloadUrl).thumbnail(
+                    Glide.with(mContext).load(thumbUri)
+            ).into(postImageView);
         }
 
         public void setDate(String date) {
@@ -123,88 +229,17 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
         public void setUserImage(String imagePath) {
             postUserImageView = mView.findViewById(R.id.post_user_image);
+
             RequestOptions placeholderOption = new RequestOptions();
             placeholderOption.placeholder(R.drawable.profile_placeholder);
+
             Glide.with(mContext).applyDefaultRequestOptions(placeholderOption).load(imagePath).into(postUserImageView);
+        }
+
+        public void updatePostLikesCount(int count) {
+            postLikeCount = mView.findViewById(R.id.post_like_count);
+            postLikeCount.setText(String.format("%s Likes", count));
         }
     }
 
-//    private Context context;
-//    private ArrayList<Post> posts;
-//
-//    public PostAdapter(Context context, ArrayList<Post> posts) {
-//        this.context = context;
-//        this.posts = posts;
-//    }
-//
-//    @Override
-//    public PostViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-//        return new PostViewHolder(LayoutInflater.from(parent.getContext()), parent);
-//    }
-//
-//    @SuppressLint("DefaultLocale")
-//    @Override
-//    public void onBindViewHolder(PostViewHolder holder, @SuppressLint("RecyclerView") final int position) {
-//        holder.title.setText(posts.get(position).getTitle());
-//        holder.title.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Intent intent = new Intent(context, UserActivity.class);
-//                context.startActivity(intent);
-//            }
-//        });
-//        holder.description.setText(posts.get(position).getDescription());
-//        holder.image.setImageResource(posts.get(position).getImage());
-//        holder.likesCount.setText(String.format("%d", posts.get(position).getLikes()));
-//        holder.comments.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Intent intent = new Intent(context, CommentsActivity.class);
-//                intent.putExtra("position", position);
-//                context.startActivity(intent);
-//            }
-//        });
-//    }
-//
-//    @Override
-//    public int getItemCount() {
-//        return posts.size();
-//    }
-//
-//    public class PostViewHolder extends RecyclerView.ViewHolder {
-//
-//        private TextView title;
-//        private TextView description;
-//        private ImageView image;
-//        private TextView comments;
-//        private TextView likesCount;
-//        private TextView like;
-//
-//        PostViewHolder(LayoutInflater inflater, ViewGroup parent) {
-//            super(inflater.inflate(R.layout.post_item, parent, false));
-//
-//            title = itemView.findViewById(R.id.post_title);
-//            description = itemView.findViewById(R.id.post_description);
-//            image = itemView.findViewById(R.id.post_image);
-//            comments = itemView.findViewById(R.id.post_all_comments);
-//            likesCount = itemView.findViewById(R.id.post_likes_count);
-//            like = itemView.findViewById(R.id.post_like);
-////            viewBackground = itemView.findViewById(R.id.view_background);
-////            viewForeground = itemView.findViewById(R.id.view_foreground);
-////            itemView.setOnClickListener(new View.OnClickListener() {
-////                @Override
-////                public void onClick(View view) {
-////                    Intent intent = new Intent(context, ScrollingActivity.class);
-////                    context.startActivity(intent);
-////                }
-////            });
-////            userName.setOnClickListener(new View.OnClickListener() {
-////                @Override
-////                public void onClick(View view) {
-////                    Intent intent = new Intent(context, ScrollingActivity.class);
-////                    context.startActivity(intent);
-////                }
-////            });
-//        }
-//    }
 }

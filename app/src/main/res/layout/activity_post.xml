@@ -9,14 +9,14 @@
     <ImageView
         android:id="@+id/new_post_image"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="200dp"
         android:layout_marginTop="8dp"
-        android:scaleType="center"
+        android:contentDescription="@string/post_image"
+        android:scaleType="centerCrop"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/plus_image"
-        android:contentDescription="@string/post_image" />
+        app:srcCompat="@drawable/plus_image" />
 
     <EditText
         android:id="@+id/new_post_description"

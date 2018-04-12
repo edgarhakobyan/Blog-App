@@ -47,7 +47,7 @@ public class PostActivity extends AppCompatActivity {
     private Button addPostBtn;
     private ProgressBar postProgress;
 
-    private Uri postImageUri;
+    private Uri postImageUri = null;
     private String currentUserId;
 
     private StorageReference storageReference;
@@ -61,10 +61,10 @@ public class PostActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post);
 
-        postImage = (ImageView) findViewById(R.id.new_post_image);
-        postDescription = (EditText) findViewById(R.id.new_post_description);
-        addPostBtn = (Button) findViewById(R.id.add_new_post_btn);
-        postProgress = (ProgressBar) findViewById(R.id.new_post_progressbar);
+        postImage = findViewById(R.id.new_post_image);
+        postDescription = findViewById(R.id.new_post_description);
+        addPostBtn = findViewById(R.id.add_new_post_btn);
+        postProgress = findViewById(R.id.new_post_progressbar);
 
         // Get Firebase data
         storageReference = FirebaseStorage.getInstance().getReference();
@@ -88,14 +88,34 @@ public class PostActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 final String desc = postDescription.getText().toString();
+
                 if (!TextUtils.isEmpty(desc) && postImageUri != null) {
 
                     postProgress.setVisibility(View.VISIBLE);
 
                     final String randomName = UUID.randomUUID().toString();
 
-                    StorageReference filePath = storageReference.child("postImages").child(randomName + ".jpg");
-                    filePath.putFile(postImageUri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                    // PHOTO UPLOAD
+                    File newImageFile = new File(postImageUri.getPath());
+                    try {
+
+                        compressedImageFile = new Compressor(PostActivity.this)
+                                .setMaxHeight(720)
+                                .setMaxWidth(720)
+                                .setQuality(50)
+                                .compressToBitmap(newImageFile);
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    compressedImageFile.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                    byte[] imageData = baos.toByteArray();
+
+                    UploadTask filePath = storageReference.child(Constants.POST_IMAGES).child(randomName + ".jpg")
+                            .putBytes(imageData);
+                    filePath.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
                             final String downloadUri = task.getResult().getDownloadUrl().toString();
@@ -117,9 +137,9 @@ public class PostActivity extends AppCompatActivity {
                                 compressedImageFile.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                                 byte[] thumbData = baos.toByteArray();
 
-                                UploadTask uploadTask = storageReference.child("postImages/thumbs")
-                                        .child(randomName + ".jpg").putBytes(thumbData);
 
+                                UploadTask uploadTask = storageReference.child(Constants.IMAGE_THUMBS)
+                                        .child(randomName + ".jpg").putBytes(thumbData);
                                 uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                                     @Override
                                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
@@ -132,20 +152,21 @@ public class PostActivity extends AppCompatActivity {
                                         postMap.put("userId", currentUserId);
                                         postMap.put("timestamp", FieldValue.serverTimestamp());
 
-                                        firebaseFirestore.collection(Constants.POSTS).add(postMap).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<DocumentReference> task) {
-                                                if (task.isSuccessful()) {
-                                                    Toast.makeText(PostActivity.this, "Post was added ", Toast.LENGTH_LONG).show();
-                                                    Intent intent = new Intent(PostActivity.this, MainActivity.class);
-                                                    startActivity(intent);
-                                                    finish();
-                                                } else {
+                                        firebaseFirestore.collection(Constants.POSTS).add(postMap)
+                                                .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<DocumentReference> task) {
+                                                        if (task.isSuccessful()) {
+                                                            Toast.makeText(PostActivity.this, "Post was added ", Toast.LENGTH_LONG).show();
+                                                            Intent intent = new Intent(PostActivity.this, MainActivity.class);
+                                                            startActivity(intent);
+                                                            finish();
+                                                        } else {
 
-                                                }
-                                                postProgress.setVisibility(View.INVISIBLE);
-                                            }
-                                        });
+                                                        }
+                                                        postProgress.setVisibility(View.INVISIBLE);
+                                                    }
+                                                });
                                     }
                                 }).addOnFailureListener(new OnFailureListener() {
                                     @Override
@@ -154,11 +175,12 @@ public class PostActivity extends AppCompatActivity {
                                     }
                                 });
 
-                            } else {
-                                postProgress.setVisibility(View.INVISIBLE);
                             }
+
                         }
                     });
+                } else {
+                    postProgress.setVisibility(View.INVISIBLE);
                 }
             }
         });
