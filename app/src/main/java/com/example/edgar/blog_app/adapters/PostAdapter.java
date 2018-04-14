@@ -1,6 +1,7 @@
 package com.example.edgar.blog_app.adapters;
 
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -16,14 +17,13 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.edgar.blog_app.Constants;
+import com.example.edgar.blog_app.constants.Constants;
 import com.example.edgar.blog_app.activities.CommentsActivity;
 import com.example.edgar.blog_app.models.Post;
 import com.example.edgar.blog_app.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentListenOptions;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -71,7 +72,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         holder.setIsRecyclable(false);
 
         final String postId = posts.get(position).PostId;
-        final String currentUserId = mFirebaseAuth.getCurrentUser().getUid();
+        final String currentUserId = Objects.requireNonNull(mFirebaseAuth.getCurrentUser()).getUid();
 
         String desc = posts.get(position).getDescription();
         holder.setDescriptionText(desc);
@@ -81,6 +82,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         holder.setPostImage(imageUrl, thumbUri);
 
         String userId = posts.get(position).getUserId();
+
+        final String likesUrl = String.format("%s/%s/%s", Constants.POSTS, postId, Constants.LIKES);
 
         mFirebaseFirestore.collection(Constants.USERS).document(userId).get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -104,8 +107,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         }
 
         // Get Likes count
-        mFirebaseFirestore.collection(Constants.POSTS + "/" + postId + "/" + Constants.LIKES)
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+        mFirebaseFirestore.collection(likesUrl).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
                 if (queryDocumentSnapshots.isEmpty()) {
@@ -118,8 +120,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         });
 
         //Get Likes
-        mFirebaseFirestore.collection(Constants.POSTS + "/" + postId + "/" + Constants.LIKES)
-                .document(currentUserId).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+        mFirebaseFirestore.collection(likesUrl).document(currentUserId).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(DocumentSnapshot documentSnapshot, FirebaseFirestoreException e) {
 
@@ -139,9 +140,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         holder.postLikeImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                mFirebaseFirestore.collection(Constants.POSTS + "/" + postId + "/" + Constants.LIKES)
-                        .document(currentUserId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                mFirebaseFirestore.collection(likesUrl).document(currentUserId).get()
+                        .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
 
@@ -149,11 +149,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                             Map<String, Object> likesMap = new HashMap<>();
                             likesMap.put(Constants.TIMESTAMP, FieldValue.serverTimestamp());
 
-                            mFirebaseFirestore.collection(Constants.POSTS + "/" + postId + "/" + Constants.LIKES)
-                                    .document(currentUserId).set(likesMap);
+                            mFirebaseFirestore.collection(likesUrl).document(currentUserId).set(likesMap);
                         } else {
-                            mFirebaseFirestore.collection(Constants.POSTS + "/" + postId + "/" + Constants.LIKES)
-                                    .document(currentUserId).delete();
+                            mFirebaseFirestore.collection(likesUrl).document(currentUserId).delete();
                         }
 
                     }
@@ -193,7 +191,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
         private CircleImageView postUserImageView;
 
-        public PostViewHolder(View itemView) {
+        PostViewHolder(View itemView) {
             super(itemView);
             mView = itemView;
 
@@ -201,12 +199,13 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             postCommentsImageView = mView.findViewById(R.id.post_comments_btn);
         }
 
-        public void setDescriptionText(String desc) {
+        void setDescriptionText(String desc) {
             postDescriptionView = mView.findViewById(R.id.post_description);
             postDescriptionView.setText(desc);
         }
 
-        public void setPostImage(String downloadUrl, String thumbUri) {
+        @SuppressLint("CheckResult")
+        void setPostImage(String downloadUrl, String thumbUri) {
             postImageView = mView.findViewById(R.id.post_image);
 
             RequestOptions placeholderOption = new RequestOptions();
@@ -227,6 +226,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             postUserNameView.setText(name);
         }
 
+        @SuppressLint("CheckResult")
         public void setUserImage(String imagePath) {
             postUserImageView = mView.findViewById(R.id.post_user_image);
 

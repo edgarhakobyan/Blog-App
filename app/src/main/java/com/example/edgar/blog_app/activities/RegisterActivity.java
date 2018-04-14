@@ -19,6 +19,8 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.Objects;
+
 public class RegisterActivity extends AppCompatActivity {
 
     private EditText regEmailField;
@@ -37,13 +39,13 @@ public class RegisterActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
-        regEmailField = (EditText) findViewById(R.id.register_email);
-        regPasswordField = (EditText) findViewById(R.id.register_password);
-        regConfirmPasswordField = (EditText) findViewById(R.id.register_confirm_password);
-        registerBtn = (Button) findViewById(R.id.register_btn);
-        haveAnAccountBtn = (Button) findViewById(R.id.reg_have_an_account);
-        loginProgress = (ProgressBar) findViewById(R.id.register_progress);
-        haveAnAccountBtn = (Button) findViewById(R.id.reg_have_an_account);
+        regEmailField = findViewById(R.id.register_email);
+        regPasswordField = findViewById(R.id.register_password);
+        regConfirmPasswordField = findViewById(R.id.register_confirm_password);
+        registerBtn = findViewById(R.id.register_btn);
+        haveAnAccountBtn = findViewById(R.id.reg_have_an_account);
+        loginProgress = findViewById(R.id.register_progress);
+        haveAnAccountBtn = findViewById(R.id.reg_have_an_account);
 
         registerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -63,7 +65,7 @@ public class RegisterActivity extends AppCompatActivity {
                                     startActivity(intent);
                                     finish();
                                 } else {
-                                    String errorMessage = task.getException().getMessage();
+                                    String errorMessage = Objects.requireNonNull(task.getException()).getMessage();
                                     Toast.makeText(RegisterActivity.this, "Error: " + errorMessage, Toast.LENGTH_LONG).show();
                                 }
                                 loginProgress.setVisibility(View.INVISIBLE);

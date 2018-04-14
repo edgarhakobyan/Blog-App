@@ -21,7 +21,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.edgar.blog_app.Constants;
+import com.example.edgar.blog_app.constants.Constants;
 import com.example.edgar.blog_app.MainActivity;
 import com.example.edgar.blog_app.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -37,6 +37,7 @@ import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class SetupActivity extends AppCompatActivity {
 
@@ -63,12 +64,12 @@ public class SetupActivity extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
         storageReference = FirebaseStorage.getInstance().getReference();
         firebaseFirestore = FirebaseFirestore.getInstance();
-        userId = firebaseAuth.getCurrentUser().getUid();
+        userId = Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid();
 
-        setupImage = (ImageView) findViewById(R.id.setup_image);
-        setupName = (EditText) findViewById(R.id.setup_name);
-        setupBtn = (Button) findViewById(R.id.setup_btn);
-        setupProgress = (ProgressBar) findViewById(R.id.setup_progressbar);
+        setupImage = findViewById(R.id.setup_image);
+        setupName = findViewById(R.id.setup_name);
+        setupBtn = findViewById(R.id.setup_btn);
+        setupProgress = findViewById(R.id.setup_progressbar);
 
         setupProgress.setVisibility(View.VISIBLE);
         setupBtn.setEnabled(false);
@@ -85,11 +86,11 @@ public class SetupActivity extends AppCompatActivity {
                         mainImageURI = Uri.parse(image);
                         setupName.setText(name);
                         RequestOptions placeholderRequest = new RequestOptions();
-                        placeholderRequest.placeholder(R.drawable.food);
+                        placeholderRequest.placeholder(R.drawable.profile_placeholder);
                         Glide.with(SetupActivity.this).setDefaultRequestOptions(placeholderRequest).load(image).into(setupImage);
                     }
                 } else {
-                    String error = task.getException().getMessage();
+                    String error = Objects.requireNonNull(task.getException()).getMessage();
                     Toast.makeText(SetupActivity.this, "(FIRESTORE Retrieve Error) : " + error, Toast.LENGTH_LONG).show();
                 }
                 setupProgress.setVisibility(View.INVISIBLE);
@@ -112,7 +113,7 @@ public class SetupActivity extends AppCompatActivity {
                                 if (task.isSuccessful()) {
                                     storeFirestore(task, name);
                                 } else {
-                                    String error = task.getException().getMessage();
+                                    String error = Objects.requireNonNull(task.getException()).getMessage();
                                     Toast.makeText(SetupActivity.this, "(IMAGE Error) : " + error, Toast.LENGTH_LONG).show();
                                     setupProgress.setVisibility(View.INVISIBLE);
                                 }
@@ -167,7 +168,7 @@ public class SetupActivity extends AppCompatActivity {
         }
         Map<String, String> userMap = new HashMap<>();
         userMap.put("name", userName);
-        userMap.put("image", downloadUri.toString());
+        userMap.put("image", downloadUri != null ? downloadUri.toString() : null);
 
         firebaseFirestore.collection(Constants.USERS).document(userId).set(userMap).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
@@ -178,7 +179,7 @@ public class SetupActivity extends AppCompatActivity {
                     startActivity(mainIntent);
                     finish();
                 } else {
-                    String error = task.getException().getMessage();
+                    String error = Objects.requireNonNull(task.getException()).getMessage();
                     Toast.makeText(SetupActivity.this, "(FIRESTORE Error) : " + error, Toast.LENGTH_LONG).show();
                 }
                 setupProgress.setVisibility(View.INVISIBLE);
@@ -193,22 +194,3 @@ public class SetupActivity extends AppCompatActivity {
                 .start(SetupActivity.this);
     }
 }
-
-//    File newImageFile = new File(mainImageURI.getPath());
-//    try {
-//
-//        compressedImageFile = new Compressor(SetupActivity.this)
-//                .setMaxHeight(125)
-//                .setMaxWidth(125)
-//                .setQuality(50)
-//                .compressToBitmap(newImageFile);
-//
-//    } catch (IOException e) {
-//        e.printStackTrace();
-//    }
-//    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//    compressedImageFile.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-//            byte[] thumbData = baos.toByteArray();
-//            UploadTask image_path = storageReference.child("profile_images").child(userId + ".jpg").putBytes(thumbData);
-//
-//            image_path.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {

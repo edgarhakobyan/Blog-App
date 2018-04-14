@@ -23,6 +23,7 @@ import com.example.edgar.blog_app.activities.NotificationActivity;
 import com.example.edgar.blog_app.activities.PostActivity;
 import com.example.edgar.blog_app.activities.SetupActivity;
 import com.example.edgar.blog_app.adapters.PostAdapter;
+import com.example.edgar.blog_app.constants.Constants;
 import com.example.edgar.blog_app.models.Post;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -37,6 +38,7 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -53,8 +55,6 @@ public class MainActivity extends AppCompatActivity
     private FirebaseAuth mAuth;
     private FirebaseFirestore firebaseFirestore;
 
-    private String currentUserId;
-
     private DocumentSnapshot lastVisible;
 
     private Boolean isFirstPageFirstLoad = true;
@@ -65,13 +65,13 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         mAuth = FirebaseAuth.getInstance();
         firebaseFirestore = FirebaseFirestore.getInstance();
 
-        addPostBtn = (FloatingActionButton) findViewById(R.id.fab);
+        addPostBtn = findViewById(R.id.fab);
         addPostBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -80,13 +80,13 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         if (mAuth.getCurrentUser() != null) {
@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity
         if (currentUser == null) {
             sendToLogin();
         } else {
-            currentUserId = mAuth.getCurrentUser().getUid();
+            String currentUserId = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
             firebaseFirestore.collection(Constants.USERS).document(currentUserId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity
                             finish();
                         }
                     } else {
-                        String error = task.getException().getMessage();
+                        String error = Objects.requireNonNull(task.getException()).getMessage();
                         Toast.makeText(MainActivity.this, "Error: " + error, Toast.LENGTH_LONG).show();
                     }
                 }
@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -180,7 +180,7 @@ public class MainActivity extends AppCompatActivity
                 break;
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }

@@ -19,6 +19,8 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.Objects;
+
 public class LoginActivity extends AppCompatActivity {
 
     private EditText emailText;
@@ -36,11 +38,11 @@ public class LoginActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
-        emailText = (EditText) findViewById(R.id.login_email);
-        passwordText = (EditText) findViewById(R.id.login_password);
-        loginBtn = (Button) findViewById(R.id.login_btn);
-        userRegBtn = (Button) findViewById(R.id.login_reg_btn);
-        loginProgress = (ProgressBar) findViewById(R.id.login_progress);
+        emailText = findViewById(R.id.login_email);
+        passwordText = findViewById(R.id.login_password);
+        loginBtn = findViewById(R.id.login_btn);
+        userRegBtn = findViewById(R.id.login_reg_btn);
+        loginProgress = findViewById(R.id.login_progress);
 
         loginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -57,7 +59,7 @@ public class LoginActivity extends AppCompatActivity {
                             if (task.isSuccessful()) {
                                 sendToMain();
                             } else {
-                                String errorMessage = task.getException().getMessage();
+                                String errorMessage = Objects.requireNonNull(task.getException()).getMessage();
                                 Toast.makeText(LoginActivity.this, "Error: " + errorMessage, Toast.LENGTH_LONG).show();
                             }
                             loginProgress.setVisibility(View.INVISIBLE);

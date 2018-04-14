@@ -14,7 +14,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.example.edgar.blog_app.Constants;
+import com.example.edgar.blog_app.constants.Constants;
 import com.example.edgar.blog_app.MainActivity;
 import com.example.edgar.blog_app.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import id.zelory.compressor.Compressor;
@@ -118,7 +119,7 @@ public class PostActivity extends AppCompatActivity {
                     filePath.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                            final String downloadUri = task.getResult().getDownloadUrl().toString();
+                            final String downloadUri = Objects.requireNonNull(task.getResult().getDownloadUrl()).toString();
 
                             if (task.isSuccessful()) {
 

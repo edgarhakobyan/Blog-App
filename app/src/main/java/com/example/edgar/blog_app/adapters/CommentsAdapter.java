@@ -1,5 +1,6 @@
 package com.example.edgar.blog_app.adapters;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -10,14 +11,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.edgar.blog_app.Constants;
+import com.example.edgar.blog_app.constants.Constants;
 import com.example.edgar.blog_app.models.Comment;
 import com.example.edgar.blog_app.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -86,11 +85,12 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
         private TextView authorView;
         private TextView messageView;
 
-        public CommentViewHolder(View itemView) {
+        CommentViewHolder(View itemView) {
             super(itemView);
             mView = itemView;
         }
 
+        @SuppressLint("CheckResult")
         public void setUserImage(String imagePath) {
             authorImageView = mView.findViewById(R.id.comment_image);
             RequestOptions placeholderOption = new RequestOptions();
@@ -103,7 +103,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
             authorView.setText(name);
         }
 
-        public void setCommentMessage(String message) {
+        void setCommentMessage(String message) {
             messageView = mView.findViewById(R.id.comment_message);
             messageView.setText(message);
         }

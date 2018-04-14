@@ -35,7 +35,7 @@
             android:theme="@style/Base.Theme.AppCompat" />
         <activity android:name=".activities.PostActivity" />
         <activity android:name=".activities.AccountActivity" />
-        <activity android:name=".activities.NotificationActivity"></activity>
+        <activity android:name=".activities.NotificationActivity" />
     </application>
 
 </manifest>

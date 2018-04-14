@@ -2,16 +2,8 @@ package com.example.edgar.blog_app.activities;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.widget.TextView;
 
-import com.example.edgar.blog_app.models.Comment;
-import com.example.edgar.blog_app.models.Post;
 import com.example.edgar.blog_app.R;
-import com.example.edgar.blog_app.adapters.PostAdapter;
-
-import java.util.ArrayList;
 
 public class UserActivity extends AppCompatActivity {
 

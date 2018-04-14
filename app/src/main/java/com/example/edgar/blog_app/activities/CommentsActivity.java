@@ -10,12 +10,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.example.edgar.blog_app.Constants;
+import com.example.edgar.blog_app.constants.Constants;
 import com.example.edgar.blog_app.R;
 import com.example.edgar.blog_app.adapters.CommentsAdapter;
-import com.example.edgar.blog_app.adapters.PostAdapter;
 import com.example.edgar.blog_app.models.Comment;
-import com.example.edgar.blog_app.models.Post;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
