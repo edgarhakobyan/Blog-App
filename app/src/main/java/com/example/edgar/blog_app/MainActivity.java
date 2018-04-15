@@ -43,8 +43,6 @@ import java.util.Objects;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    //RecyclerItemTouchHelper.RecyclerItemTouchHelperListener
-
     FloatingActionButton addPostBtn;
 
     private RecyclerView mPostListView;
@@ -285,19 +283,16 @@ public class MainActivity extends AppCompatActivity
     private void sendToSetup() {
         Intent intent = new Intent(MainActivity.this, SetupActivity.class);
         startActivity(intent);
-        //finish();
     }
 
     private void sendToNotification() {
         Intent intent = new Intent(MainActivity.this, NotificationActivity.class);
         startActivity(intent);
-        //finish();
     }
 
     private void sendToAccount() {
         Intent intent = new Intent(MainActivity.this, AccountActivity.class);
         startActivity(intent);
-        //finish();
     }
 
 }

@@ -17,6 +17,8 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.example.edgar.blog_app.MainActivity;
+import com.example.edgar.blog_app.activities.PostActivity;
 import com.example.edgar.blog_app.constants.Constants;
 import com.example.edgar.blog_app.activities.CommentsActivity;
 import com.example.edgar.blog_app.models.Post;
@@ -36,6 +38,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.Executor;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -110,26 +113,26 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         mFirebaseFirestore.collection(likesUrl).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
-                if (queryDocumentSnapshots.isEmpty()) {
-                    holder.updatePostLikesCount(0);
-                } else {
-                    int count = queryDocumentSnapshots.size();
-                    holder.updatePostLikesCount(count);
+                if (null != queryDocumentSnapshots) {
+                    if (queryDocumentSnapshots.isEmpty()) {
+                        holder.updatePostLikesCount(0);
+                    } else {
+                        int count = queryDocumentSnapshots.size();
+                        holder.updatePostLikesCount(count);
+                    }
                 }
             }
         });
 
         //Get Likes
-        mFirebaseFirestore.collection(likesUrl).document(currentUserId).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+        mFirebaseFirestore.collection(likesUrl).document(currentUserId)
+                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(DocumentSnapshot documentSnapshot, FirebaseFirestoreException e) {
-
-                if (documentSnapshot.exists()) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && documentSnapshot != null) {
+                    if (documentSnapshot.exists()) {
                         holder.postLikeImage.setImageDrawable(mContext.getDrawable(R.mipmap.ic_like_accent));
-                    }
-                } else {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    } else {
                         holder.postLikeImage.setImageDrawable(mContext.getDrawable(R.mipmap.ic_like_gray));
                     }
                 }
