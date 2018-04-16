@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -15,7 +16,6 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -35,13 +35,19 @@ import com.google.firebase.storage.UploadTask;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+import id.zelory.compressor.Compressor;
+
 public class SetupActivity extends AppCompatActivity {
 
-    private ImageView setupImage;
+    private CircleImageView setupImage;
     private EditText setupName;
     private Button setupBtn;
     private ProgressBar setupProgress;
@@ -52,7 +58,8 @@ public class SetupActivity extends AppCompatActivity {
 
     private String userId;
     private boolean isChanged = false;
-    //private Bitmap compressedImageFile;
+
+    private Bitmap compressedImageFile;
     private Uri mainImageURI = null;
 
     @Override
@@ -105,9 +112,27 @@ public class SetupActivity extends AppCompatActivity {
                 if (!TextUtils.isEmpty(name) && mainImageURI != null) {
                     setupProgress.setVisibility(View.VISIBLE);
                     if (isChanged) {
-                        final String userId = firebaseAuth.getCurrentUser().getUid();
-                        StorageReference imagePath = storageReference.child("profileImages").child(userId + ".jpg");
-                        imagePath.putFile(mainImageURI).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                        userId = firebaseAuth.getCurrentUser().getUid();
+
+                        File newImageFile = new File(mainImageURI.getPath());
+
+                        try {
+                            compressedImageFile = new Compressor(SetupActivity.this)
+                                    .setMaxHeight(125)
+                                    .setMaxWidth(125)
+                                    .setQuality(50)
+                                    .compressToBitmap(newImageFile);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        compressedImageFile.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                        byte[] thumbData = baos.toByteArray();
+
+                        UploadTask imagePath = storageReference.child("profileImages").child(userId + ".jpg").putBytes(thumbData);
+
+                        imagePath.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                             @Override
                             public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
                                 if (task.isSuccessful()) {

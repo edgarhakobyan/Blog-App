@@ -1,7 +1,9 @@
 package com.example.edgar.blog_app;
 
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.LinearLayoutManager;
@@ -16,7 +18,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,7 +44,10 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Objects;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -66,7 +70,7 @@ public class MainActivity extends AppCompatActivity
 
     private Boolean isFirstPageFirstLoad = true;
 
-    private ImageView userHeaderImage;
+    private CircleImageView userHeaderImage;
     private TextView userHeaderName;
 
 
@@ -153,7 +157,7 @@ public class MainActivity extends AppCompatActivity
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
 
-        MenuItem searchItem = menu.findItem(R.id.ic_search);
+        MenuItem searchItem = menu.findItem(R.id.action_search);
         searchView = (SearchView) searchItem.getActionView();
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -193,7 +197,15 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_voice_search) {
+            Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+            try {
+                startActivityForResult(intent,200);
+            } catch (ActivityNotFoundException ex) {
+                Toast.makeText(getApplicationContext(), "Intent problem", Toast.LENGTH_SHORT).show();
+            }
             return true;
         }
 
@@ -233,6 +245,17 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 200 && resultCode == RESULT_OK && data != null) {
+            ArrayList<String> results = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+            String searchedText = results.get(0);
+            Toast.makeText(MainActivity.this, searchedText, Toast.LENGTH_LONG).show();
+            getSearchedPosts(searchedText);
+        }
+    }
+
     private void initRecyclerView() {
         mPosts = new ArrayList<>();
 
@@ -251,8 +274,6 @@ public class MainActivity extends AppCompatActivity
 
                     Boolean reachedBottom = !mPostListView.canScrollVertically(1);
                     if (reachedBottom) {
-                        String desc = lastVisible.getString(Constants.DESCRIPTION);
-                        Toast.makeText(MainActivity.this, "Reached: " + desc, Toast.LENGTH_LONG).show();
                         loadMorePosts();
                     }
                 }
@@ -261,7 +282,7 @@ public class MainActivity extends AppCompatActivity
             // Get posts by order timestamp
             Query firstQuery = mFirebaseFirestore.collection(Constants.POSTS)
                     .orderBy(Constants.TIMESTAMP, Query.Direction.DESCENDING)
-                    .limit(5);
+                    .limit(8);
             firstQuery.addSnapshotListener(this, new EventListener<QuerySnapshot>() {
                 @Override
                 public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
@@ -295,7 +316,7 @@ public class MainActivity extends AppCompatActivity
         Query nextQuery = mFirebaseFirestore.collection(Constants.POSTS)
                 .orderBy(Constants.TIMESTAMP, Query.Direction.DESCENDING)
                 .startAfter(lastVisible)
-                .limit(5);
+                .limit(8);
 
         nextQuery.addSnapshotListener(this, new EventListener<QuerySnapshot>() {
             @Override
@@ -354,7 +375,7 @@ public class MainActivity extends AppCompatActivity
         mPostListView.setLayoutManager(new LinearLayoutManager(this));
         mPostListView.setAdapter(mPostAdapter);
 
-        mFirebaseFirestore.collection(Constants.POSTS).addSnapshotListener(new EventListener<QuerySnapshot>() {
+        mFirebaseFirestore.collection(Constants.POSTS).addSnapshotListener(this, new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
                 for (DocumentChange doc: queryDocumentSnapshots.getDocumentChanges()) {
