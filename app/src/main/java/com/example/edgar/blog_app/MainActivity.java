@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -15,8 +16,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.edgar.blog_app.activities.AccountActivity;
 import com.example.edgar.blog_app.activities.LoginActivity;
 import com.example.edgar.blog_app.activities.NotificationActivity;
@@ -47,15 +52,22 @@ public class MainActivity extends AppCompatActivity
 
     private RecyclerView mPostListView;
 
+    private SearchView searchView;
+
     private static ArrayList<Post> mPosts = new ArrayList<>();
     private PostAdapter mPostAdapter;
 
     private FirebaseAuth mAuth;
-    private FirebaseFirestore firebaseFirestore;
+    private FirebaseFirestore mFirebaseFirestore;
+
+    private String currentUserId;
 
     private DocumentSnapshot lastVisible;
 
     private Boolean isFirstPageFirstLoad = true;
+
+    private ImageView userHeaderImage;
+    private TextView userHeaderName;
 
 
     @Override
@@ -67,7 +79,8 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         mAuth = FirebaseAuth.getInstance();
-        firebaseFirestore = FirebaseFirestore.getInstance();
+        mFirebaseFirestore = FirebaseFirestore.getInstance();
+        currentUserId = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
 
         addPostBtn = findViewById(R.id.fab);
         addPostBtn.setOnClickListener(new View.OnClickListener() {
@@ -80,7 +93,14 @@ public class MainActivity extends AppCompatActivity
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close){
+
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                changeNavigationHeader();
+            }
+
+        };
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
@@ -99,8 +119,8 @@ public class MainActivity extends AppCompatActivity
         if (currentUser == null) {
             sendToLogin();
         } else {
-            String currentUserId = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
-            firebaseFirestore.collection(Constants.USERS).document(currentUserId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            mFirebaseFirestore.collection(Constants.USERS).document(currentUserId).get()
+                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                     if (task.isSuccessful()) {
@@ -132,6 +152,36 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+
+        MenuItem searchItem = menu.findItem(R.id.ic_search);
+        searchView = (SearchView) searchItem.getActionView();
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                Toast.makeText(MainActivity.this, query, Toast.LENGTH_LONG).show();
+                searchView.clearFocus();
+                getSearchedPosts(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+
+        });
+
+        searchView.setOnCloseListener(new SearchView.OnCloseListener() {
+            @Override
+            public boolean onClose() {
+                isFirstPageFirstLoad = true;
+                initRecyclerView();
+                return false;
+            }
+        });
+
         return true;
     }
 
@@ -209,9 +259,9 @@ public class MainActivity extends AppCompatActivity
             });
 
             // Get posts by order timestamp
-            Query firstQuery = firebaseFirestore.collection(Constants.POSTS)
+            Query firstQuery = mFirebaseFirestore.collection(Constants.POSTS)
                     .orderBy(Constants.TIMESTAMP, Query.Direction.DESCENDING)
-                    .limit(3);
+                    .limit(5);
             firstQuery.addSnapshotListener(this, new EventListener<QuerySnapshot>() {
                 @Override
                 public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
@@ -242,10 +292,10 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void loadMorePosts() {
-        Query nextQuery = firebaseFirestore.collection(Constants.POSTS)
+        Query nextQuery = mFirebaseFirestore.collection(Constants.POSTS)
                 .orderBy(Constants.TIMESTAMP, Query.Direction.DESCENDING)
                 .startAfter(lastVisible)
-                .limit(3);
+                .limit(5);
 
         nextQuery.addSnapshotListener(this, new EventListener<QuerySnapshot>() {
             @Override
@@ -293,6 +343,59 @@ public class MainActivity extends AppCompatActivity
     private void sendToAccount() {
         Intent intent = new Intent(MainActivity.this, AccountActivity.class);
         startActivity(intent);
+    }
+
+    private void getSearchedPosts(final String searchingText) {
+        final ArrayList<Post> searchedPosts = new ArrayList<>();
+
+        mPostAdapter = new PostAdapter(searchedPosts);
+
+        mPostListView = findViewById(R.id.post_list_view);
+        mPostListView.setLayoutManager(new LinearLayoutManager(this));
+        mPostListView.setAdapter(mPostAdapter);
+
+        mFirebaseFirestore.collection(Constants.POSTS).addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
+                for (DocumentChange doc: queryDocumentSnapshots.getDocumentChanges()) {
+                    if (doc.getType() == DocumentChange.Type.ADDED) {
+
+                        String postId = doc.getDocument().getId();
+                        Post post = doc.getDocument().toObject(Post.class).withId(postId);
+
+                        if (post.getDescription().contains(searchingText)) {
+                            searchedPosts.add(post);
+                        }
+                        mPostAdapter.notifyDataSetChanged();
+                    }
+                }
+            }
+        });
+
+    }
+
+    private void changeNavigationHeader() {
+
+        userHeaderName = findViewById(R.id.user_header_name);
+        userHeaderImage = findViewById(R.id.user_header_image);
+
+        mFirebaseFirestore.collection(Constants.USERS).document(currentUserId).get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            String userName = task.getResult().getString(Constants.NAME);
+                            String userImage = task.getResult().getString(Constants.IMAGE);
+
+                            userHeaderName.setText(userName);
+
+                            RequestOptions placeholderOption = new RequestOptions();
+                            placeholderOption.placeholder(R.mipmap.ic_launcher_round);
+
+                            Glide.with(MainActivity.this).applyDefaultRequestOptions(placeholderOption).load(userImage).into(userHeaderImage);
+                        }
+                    }
+                });
     }
 
 }

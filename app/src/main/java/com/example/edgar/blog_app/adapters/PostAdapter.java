@@ -17,8 +17,6 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.edgar.blog_app.MainActivity;
-import com.example.edgar.blog_app.activities.PostActivity;
 import com.example.edgar.blog_app.constants.Constants;
 import com.example.edgar.blog_app.activities.CommentsActivity;
 import com.example.edgar.blog_app.models.Post;
@@ -38,7 +36,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.Executor;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -87,6 +84,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         String userId = posts.get(position).getUserId();
 
         final String likesUrl = String.format("%s/%s/%s", Constants.POSTS, postId, Constants.LIKES);
+        final String commentsUrl = String.format("%s/%s/%s", Constants.POSTS, postId, Constants.COMMENTS);
 
         mFirebaseFirestore.collection(Constants.USERS).document(userId).get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -162,6 +160,21 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             }
         });
 
+        // Get Comments count
+        mFirebaseFirestore.collection(commentsUrl).addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
+                if (null != queryDocumentSnapshots) {
+                    if (queryDocumentSnapshots.isEmpty()) {
+                        holder.updatePostCommentsCount(0);
+                    } else {
+                        int count = queryDocumentSnapshots.size();
+                        holder.updatePostCommentsCount(count);
+                    }
+                }
+            }
+        });
+
         //Comments feature
         holder.postCommentsImageView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -187,6 +200,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         private TextView postDateView;
         private TextView postUserNameView;
         private TextView postLikeCount;
+        private TextView postCommentsCount;
 
         private ImageView postImageView;
         private ImageView postLikeImage;
@@ -242,6 +256,11 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         public void updatePostLikesCount(int count) {
             postLikeCount = mView.findViewById(R.id.post_like_count);
             postLikeCount.setText(String.format("%s Likes", count));
+        }
+
+        public void updatePostCommentsCount(int count) {
+            postCommentsCount = mView.findViewById(R.id.post_comments_count);
+            postCommentsCount.setText(String.format("%s Comments", count));
         }
     }
 
