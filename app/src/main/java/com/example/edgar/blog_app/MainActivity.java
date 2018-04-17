@@ -73,6 +73,8 @@ public class MainActivity extends AppCompatActivity
     private CircleImageView userHeaderImage;
     private TextView userHeaderName;
 
+    private static boolean isSearchedListShown = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,6 +149,10 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
+        } else if (isSearchedListShown) {
+            isFirstPageFirstLoad = true;
+            initRecyclerView();
+            isSearchedListShown = false;
         } else {
             super.onBackPressed();
         }
@@ -166,7 +172,7 @@ public class MainActivity extends AppCompatActivity
             public boolean onQueryTextSubmit(String query) {
                 Toast.makeText(MainActivity.this, query, Toast.LENGTH_LONG).show();
                 searchView.clearFocus();
-                getSearchedPosts(query);
+                showSearchedPosts(query);
                 return true;
             }
 
@@ -252,7 +258,8 @@ public class MainActivity extends AppCompatActivity
             ArrayList<String> results = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
             String searchedText = results.get(0);
             Toast.makeText(MainActivity.this, searchedText, Toast.LENGTH_LONG).show();
-            getSearchedPosts(searchedText);
+            showSearchedPosts(searchedText);
+            isSearchedListShown = true;
         }
     }
 
@@ -366,7 +373,7 @@ public class MainActivity extends AppCompatActivity
         startActivity(intent);
     }
 
-    private void getSearchedPosts(final String searchingText) {
+    private void showSearchedPosts(final String searchingText) {
         final ArrayList<Post> searchedPosts = new ArrayList<>();
 
         mPostAdapter = new PostAdapter(searchedPosts);
