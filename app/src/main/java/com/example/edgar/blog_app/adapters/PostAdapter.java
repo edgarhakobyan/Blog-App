@@ -11,6 +11,7 @@ import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,7 +22,9 @@ import com.example.edgar.blog_app.constants.Constants;
 import com.example.edgar.blog_app.activities.CommentsActivity;
 import com.example.edgar.blog_app.models.Post;
 import com.example.edgar.blog_app.R;
+import com.example.edgar.blog_app.models.User;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -34,6 +37,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -45,15 +49,17 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder> {
 
-    private ArrayList<Post> posts;
+    private List<Post> postList;
+    private List<User> userList;
 
     private Context mContext;
 
     private FirebaseFirestore mFirebaseFirestore;
     private FirebaseAuth mFirebaseAuth;
 
-    public PostAdapter(ArrayList<Post> posts) {
-        this.posts = posts;
+    public PostAdapter(List<Post> postList, List<User> userList) {
+        this.postList = postList;
+        this.userList = userList;
     }
 
     @NonNull
@@ -67,40 +73,39 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
     }
 
     @Override
-    public void onBindViewHolder(@NonNull final PostViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull final PostViewHolder holder, final int position) {
 
         holder.setIsRecyclable(false);
 
-        final String postId = posts.get(position).PostId;
+        final String postId = postList.get(position).PostId;
         final String currentUserId = Objects.requireNonNull(mFirebaseAuth.getCurrentUser()).getUid();
 
-        String desc = posts.get(position).getDescription();
+        String desc = postList.get(position).getDescription();
         holder.setDescriptionText(desc);
 
-        String imageUrl = posts.get(position).getImageUrl();
-        String thumbUri = posts.get(position).getImageThumb();
+        String imageUrl = postList.get(position).getImageUrl();
+        String thumbUri = postList.get(position).getImageThumb();
         holder.setPostImage(imageUrl, thumbUri);
 
-        String userId = posts.get(position).getUserId();
+        String postUserId = postList.get(position).getUserId();
+
+        if (postUserId.equals(currentUserId)) {
+            holder.deletePostBtn.setVisibility(View.VISIBLE);
+            holder.deletePostBtn.setEnabled(true);
+        }
 
         final String likesUrl = String.format("%s/%s/%s", Constants.POSTS, postId, Constants.LIKES);
         final String commentsUrl = String.format("%s/%s/%s", Constants.POSTS, postId, Constants.COMMENTS);
 
-        mFirebaseFirestore.collection(Constants.USERS).document(userId).get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    String userName = task.getResult().getString(Constants.NAME);
-                    String userImage = task.getResult().getString(Constants.IMAGE);
-                    holder.setUserName(userName);
-                    holder.setUserImage(userImage);
-                }
-            }
-        });
+
+        String userName = userList.get(position).getName();
+        String userImage = userList.get(position).getImage();
+        holder.setUserName(userName);
+        holder.setUserImage(userImage);
+
 
         try {
-            long milliseconds = posts.get(position).getTimestamp().getTime();
+            long milliseconds = postList.get(position).getTimestamp().getTime();
             String dateString = DateFormat.format(Constants.DATE_FORMAT, new Date(milliseconds)).toString();
             holder.setDate(dateString);
         } catch (Exception e) {
@@ -185,11 +190,25 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             }
         });
 
+        //Delete post
+        holder.deletePostBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mFirebaseFirestore.collection(Constants.POSTS).document(postId).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        postList.remove(position);
+                        userList.remove(position);
+                    }
+                });
+            }
+        });
+
     }
 
     @Override
     public int getItemCount() {
-        return posts.size();
+        return postList.size();
     }
 
     public class PostViewHolder extends RecyclerView.ViewHolder {
@@ -208,12 +227,15 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
         private CircleImageView postUserImageView;
 
+        private Button deletePostBtn;
+
         PostViewHolder(View itemView) {
             super(itemView);
             mView = itemView;
 
             postLikeImage = mView.findViewById(R.id.post_like_image);
             postCommentsImageView = mView.findViewById(R.id.post_comments_btn);
+            deletePostBtn = mView.findViewById(R.id.delete_post_btn);
         }
 
         void setDescriptionText(String desc) {

@@ -31,6 +31,7 @@ import com.example.edgar.blog_app.activities.SetupActivity;
 import com.example.edgar.blog_app.adapters.PostAdapter;
 import com.example.edgar.blog_app.constants.Constants;
 import com.example.edgar.blog_app.models.Post;
+import com.example.edgar.blog_app.models.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -44,6 +45,7 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -58,7 +60,9 @@ public class MainActivity extends AppCompatActivity
 
     private SearchView searchView;
 
-    private static ArrayList<Post> mPosts = new ArrayList<>();
+    private List<Post> postList;
+    private List<User> userList;
+
     private PostAdapter mPostAdapter;
 
     private FirebaseAuth mAuth;
@@ -81,6 +85,8 @@ public class MainActivity extends AppCompatActivity
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        userList = new ArrayList<>();
 
         mAuth = FirebaseAuth.getInstance();
         mFirebaseFirestore = FirebaseFirestore.getInstance();
@@ -262,9 +268,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void initRecyclerView() {
-        mPosts = new ArrayList<>();
+        postList = new ArrayList<>();
 
-        mPostAdapter = new PostAdapter(mPosts);
+        mPostAdapter = new PostAdapter(postList, userList);
 
         mPostListView = findViewById(R.id.post_list_view);
         mPostListView.setLayoutManager(new LinearLayoutManager(this));
@@ -295,20 +301,37 @@ public class MainActivity extends AppCompatActivity
                     if (queryDocumentSnapshots != null) {
                         if (isFirstPageFirstLoad && queryDocumentSnapshots.size() > 0) {
                             lastVisible = queryDocumentSnapshots.getDocuments().get(queryDocumentSnapshots.size() - 1);
+                            postList.clear();
+                            userList.clear();
                         }
 
                         for (DocumentChange doc : queryDocumentSnapshots.getDocumentChanges()) {
                             if (doc.getType() == DocumentChange.Type.ADDED) {
 
                                 String postId = doc.getDocument().getId();
-                                Post post = doc.getDocument().toObject(Post.class).withId(postId);
+                                final Post post = doc.getDocument().toObject(Post.class).withId(postId);
 
-                                if (isFirstPageFirstLoad) {
-                                    mPosts.add(post);
-                                } else {
-                                    mPosts.add(0, post);
-                                }
-                                mPostAdapter.notifyDataSetChanged();
+                                String blogUserId = doc.getDocument().getString(Constants.USER_ID);
+                                assert blogUserId != null;
+                                mFirebaseFirestore.collection(Constants.USERS).document(blogUserId).get()
+                                        .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+
+                                        if (task.isSuccessful()) {
+                                            User user = task.getResult().toObject(User.class);
+
+                                            if (isFirstPageFirstLoad) {
+                                                postList.add(post);
+                                                userList.add(user);
+                                            } else {
+                                                postList.add(0, post);
+                                                userList.add(0,user);
+                                            }
+                                            mPostAdapter.notifyDataSetChanged();
+                                        }
+                                    }
+                                });
 
                             }
                         }
@@ -335,10 +358,25 @@ public class MainActivity extends AppCompatActivity
                         if (doc.getType() == DocumentChange.Type.ADDED) {
 
                             String postId = doc.getDocument().getId();
-                            Post post = doc.getDocument().toObject(Post.class).withId(postId);
+                            final Post post = doc.getDocument().toObject(Post.class).withId(postId);
 
-                            mPosts.add(post);
-                            mPostAdapter.notifyDataSetChanged();
+                            String blogUserId = doc.getDocument().getString(Constants.USER_ID);
+                            assert blogUserId != null;
+                            mFirebaseFirestore.collection(Constants.USERS).document(blogUserId).get()
+                                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+
+                                            if (task.isSuccessful()) {
+                                                User user = task.getResult().toObject(User.class);
+
+                                                postList.add(post);
+                                                userList.add(user);
+
+                                                mPostAdapter.notifyDataSetChanged();
+                                            }
+                                        }
+                                    });
                         }
                     }
                 }
@@ -375,8 +413,9 @@ public class MainActivity extends AppCompatActivity
 
     private void showSearchedPosts(final String searchingText) {
         final ArrayList<Post> searchedPosts = new ArrayList<>();
+        final List<User> searchedUsers = new ArrayList<>();
 
-        mPostAdapter = new PostAdapter(searchedPosts);
+        mPostAdapter = new PostAdapter(searchedPosts, searchedUsers);
 
         mPostListView = findViewById(R.id.post_list_view);
         mPostListView.setLayoutManager(new LinearLayoutManager(this));
@@ -389,12 +428,27 @@ public class MainActivity extends AppCompatActivity
                     if (doc.getType() == DocumentChange.Type.ADDED) {
 
                         String postId = doc.getDocument().getId();
-                        Post post = doc.getDocument().toObject(Post.class).withId(postId);
+                        final Post post = doc.getDocument().toObject(Post.class).withId(postId);
 
-                        if (post.getDescription().contains(searchingText)) {
-                            searchedPosts.add(post);
-                        }
-                        mPostAdapter.notifyDataSetChanged();
+                        String blogUserId = doc.getDocument().getString(Constants.USER_ID);
+                        assert blogUserId != null;
+                        mFirebaseFirestore.collection(Constants.USERS).document(blogUserId).get()
+                                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+
+                                        if (task.isSuccessful()) {
+                                            User user = task.getResult().toObject(User.class);
+
+                                            if (post.getDescription().contains(searchingText)) {
+                                                searchedPosts.add(post);
+                                                searchedUsers.add(user);
+                                            }
+
+                                            mPostAdapter.notifyDataSetChanged();
+                                        }
+                                    }
+                                });
                     }
                 }
             }

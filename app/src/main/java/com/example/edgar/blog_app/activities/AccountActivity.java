@@ -15,6 +15,7 @@ import com.example.edgar.blog_app.R;
 import com.example.edgar.blog_app.adapters.PostAdapter;
 import com.example.edgar.blog_app.constants.Constants;
 import com.example.edgar.blog_app.models.Post;
+import com.example.edgar.blog_app.models.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -27,12 +28,15 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class AccountActivity extends AppCompatActivity {
 
-    private static ArrayList<Post> mPosts;
+    private List<Post> postList;
+    private List<User> userList;
+
     private PostAdapter mPostAdapter;
     private RecyclerView mPostListView;
 
@@ -50,8 +54,9 @@ public class AccountActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         mFirebaseFirestore = FirebaseFirestore.getInstance();
 
-        mPosts = new ArrayList<>();
-        mPostAdapter = new PostAdapter(mPosts);
+        postList = new ArrayList<>();
+        userList = new ArrayList<>();
+        mPostAdapter = new PostAdapter(postList, userList);
 
         mPostListView = findViewById(R.id.account_posts);
         mPostListView.setLayoutManager(new LinearLayoutManager(this));
@@ -90,11 +95,25 @@ public class AccountActivity extends AppCompatActivity {
                             if (doc.getType() == DocumentChange.Type.ADDED) {
 
                                 String postId = doc.getDocument().getId();
-                                Post post = doc.getDocument().toObject(Post.class).withId(postId);
+                                final Post post = doc.getDocument().toObject(Post.class).withId(postId);
 
-                                mPosts.add(post);
+                                String blogUserId = doc.getDocument().getString(Constants.USER_ID);
+                                assert blogUserId != null;
+                                mFirebaseFirestore.collection(Constants.USERS).document(blogUserId).get()
+                                        .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
 
-                                mPostAdapter.notifyDataSetChanged();
+                                                if (task.isSuccessful()) {
+                                                    User user = task.getResult().toObject(User.class);
+
+                                                    postList.add(post);
+                                                    userList.add(user);
+
+                                                    mPostAdapter.notifyDataSetChanged();
+                                                }
+                                            }
+                                        });
 
                             }
                         }
