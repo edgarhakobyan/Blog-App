@@ -50,7 +50,11 @@
             android:label="New Post"
             android:screenOrientation="portrait"
             android:parentActivityName=".MainActivity"/>
-        <activity android:name=".activities.AccountActivity" />
+        <activity
+            android:name=".activities.AccountActivity"
+            android:label="My Account"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".MainActivity"/>
         <activity android:name=".activities.NotificationActivity" />
     </application>
 

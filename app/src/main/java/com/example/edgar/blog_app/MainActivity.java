@@ -64,8 +64,6 @@ public class MainActivity extends AppCompatActivity
     private FirebaseAuth mAuth;
     private FirebaseFirestore mFirebaseFirestore;
 
-    private String currentUserId;
-
     private DocumentSnapshot lastVisible;
 
     private Boolean isFirstPageFirstLoad = true;
@@ -86,7 +84,6 @@ public class MainActivity extends AppCompatActivity
 
         mAuth = FirebaseAuth.getInstance();
         mFirebaseFirestore = FirebaseFirestore.getInstance();
-        currentUserId = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
 
         addPostBtn = findViewById(R.id.fab);
         addPostBtn.setOnClickListener(new View.OnClickListener() {
@@ -125,6 +122,7 @@ public class MainActivity extends AppCompatActivity
         if (currentUser == null) {
             sendToLogin();
         } else {
+            String currentUserId = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
             mFirebaseFirestore.collection(Constants.USERS).document(currentUserId).get()
                     .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                 @Override
@@ -294,26 +292,28 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
 
-                    if (isFirstPageFirstLoad && queryDocumentSnapshots.size() > 0) {
-                        lastVisible = queryDocumentSnapshots.getDocuments().get(queryDocumentSnapshots.size() - 1);
-                    }
-
-                    for (DocumentChange doc: queryDocumentSnapshots.getDocumentChanges()) {
-                        if (doc.getType() == DocumentChange.Type.ADDED) {
-
-                            String postId = doc.getDocument().getId();
-                            Post post = doc.getDocument().toObject(Post.class).withId(postId);
-
-                            if (isFirstPageFirstLoad) {
-                                mPosts.add(post);
-                            } else {
-                                mPosts.add(0, post);
-                            }
-                            mPostAdapter.notifyDataSetChanged();
-
+                    if (queryDocumentSnapshots != null) {
+                        if (isFirstPageFirstLoad && queryDocumentSnapshots.size() > 0) {
+                            lastVisible = queryDocumentSnapshots.getDocuments().get(queryDocumentSnapshots.size() - 1);
                         }
+
+                        for (DocumentChange doc : queryDocumentSnapshots.getDocumentChanges()) {
+                            if (doc.getType() == DocumentChange.Type.ADDED) {
+
+                                String postId = doc.getDocument().getId();
+                                Post post = doc.getDocument().toObject(Post.class).withId(postId);
+
+                                if (isFirstPageFirstLoad) {
+                                    mPosts.add(post);
+                                } else {
+                                    mPosts.add(0, post);
+                                }
+                                mPostAdapter.notifyDataSetChanged();
+
+                            }
+                        }
+                        isFirstPageFirstLoad = false;
                     }
-                    isFirstPageFirstLoad = false;
                 }
             });
         }
@@ -329,7 +329,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
 
-                if (!queryDocumentSnapshots.isEmpty()) {
+                if (queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()) {
                     lastVisible = queryDocumentSnapshots.getDocuments().get(queryDocumentSnapshots.size() - 1);
                     for (DocumentChange doc : queryDocumentSnapshots.getDocumentChanges()) {
                         if (doc.getType() == DocumentChange.Type.ADDED) {
@@ -407,6 +407,7 @@ public class MainActivity extends AppCompatActivity
         userHeaderName = findViewById(R.id.user_header_name);
         userHeaderImage = findViewById(R.id.user_header_image);
 
+        String currentUserId = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         mFirebaseFirestore.collection(Constants.USERS).document(currentUserId).get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override

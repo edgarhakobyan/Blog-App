@@ -54,5 +54,6 @@
     <string name="nav_account_title">Account</string>
     <string name="search">Search</string>
     <string name="voice_search">Voice Search</string>
+    <string name="default_user_name">User name</string>
 
 </resources>
