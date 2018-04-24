@@ -1,4 +1,4 @@
-package com.example.edgar.blog_app;
+package com.example.edgar.blog_app.activities;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
@@ -23,11 +23,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.edgar.blog_app.activities.AccountActivity;
-import com.example.edgar.blog_app.activities.LoginActivity;
-import com.example.edgar.blog_app.activities.NotificationActivity;
-import com.example.edgar.blog_app.activities.PostActivity;
-import com.example.edgar.blog_app.activities.SetupActivity;
+import com.example.edgar.blog_app.R;
 import com.example.edgar.blog_app.adapters.PostAdapter;
 import com.example.edgar.blog_app.constants.Constants;
 import com.example.edgar.blog_app.models.Post;
