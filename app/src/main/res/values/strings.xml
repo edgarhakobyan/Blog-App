@@ -31,7 +31,7 @@
     <string name="dislike_in_post">Dislike in post</string>
 
     <!--Login/Register page-->
-    <string name="welcome_to_photo_blog">Welcome To Photo Blog</string>
+    <string name="welcome_to_photo_blog">Welcome To Blog</string>
     <string name="your_email">Your email…</string>
     <string name="password">Password…</string>
     <string name="login_btn_title">LogIn</string>
@@ -55,5 +55,10 @@
     <string name="search">Search</string>
     <string name="voice_search">Voice Search</string>
     <string name="default_user_name">User name</string>
+
+    <!--Forgot Password-->
+    <string name="forgot_your_password">Forgot your password ?</string>
+    <string name="forgot_password_instruction">To reset password, enter your email, press the button and check mail to follow instruction</string>
+    <string name="reset_password">Reset Password</string>
 
 </resources>

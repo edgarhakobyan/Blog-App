@@ -46,6 +46,7 @@
         android:inputType="textEmailAddress"
         android:padding="16dp"
         android:textColor="@android:color/white"
+        android:textColorHint="@android:color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/register_page_title" />

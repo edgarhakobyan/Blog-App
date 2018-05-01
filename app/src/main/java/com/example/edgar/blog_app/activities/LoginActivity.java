@@ -4,11 +4,13 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.edgar.blog_app.R;
@@ -27,6 +29,7 @@ public class LoginActivity extends AppCompatActivity {
     private Button loginBtn;
     private Button userRegBtn;
     private ProgressBar loginProgress;
+    private TextView forgotPassword;
 
     private FirebaseAuth mAuth;
 
@@ -42,6 +45,7 @@ public class LoginActivity extends AppCompatActivity {
         loginBtn = findViewById(R.id.login_btn);
         userRegBtn = findViewById(R.id.login_reg_btn);
         loginProgress = findViewById(R.id.login_progress);
+        forgotPassword = findViewById(R.id.forgot_password);
 
         loginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -73,6 +77,14 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent mainIntent = new Intent(LoginActivity.this, RegisterActivity.class);
+                startActivity(mainIntent);
+            }
+        });
+
+        forgotPassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent mainIntent = new Intent(LoginActivity.this, ResetPasswordActivity.class);
                 startActivity(mainIntent);
             }
         });

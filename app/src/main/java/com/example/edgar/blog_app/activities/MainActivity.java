@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity
 
     private CircleImageView userHeaderImage;
     private TextView userHeaderName;
+    private TextView userHeaderEmail;
 
     private static boolean isSearchedListShown = false;
 
@@ -82,6 +83,7 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        postList = new ArrayList<>();
         userList = new ArrayList<>();
 
         mAuth = FirebaseAuth.getInstance();
@@ -264,7 +266,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void initRecyclerView() {
-        postList = new ArrayList<>();
 
         mPostAdapter = new PostAdapter(postList, userList);
 
@@ -456,6 +457,7 @@ public class MainActivity extends AppCompatActivity
 
         userHeaderName = findViewById(R.id.user_header_name);
         userHeaderImage = findViewById(R.id.user_header_image);
+        userHeaderEmail = findViewById(R.id.user_header_email);
 
         String currentUserId = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         mFirebaseFirestore.collection(Constants.USERS).document(currentUserId).get()
@@ -475,6 +477,8 @@ public class MainActivity extends AppCompatActivity
                         }
                     }
                 });
+        String email = mAuth.getCurrentUser().getEmail();
+        userHeaderEmail.setText(email);
     }
 
 }
