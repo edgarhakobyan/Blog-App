@@ -9,15 +9,18 @@ import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.example.edgar.blog_app.activities.PostActivity;
 import com.example.edgar.blog_app.activities.PostMoreInfoActivity;
 import com.example.edgar.blog_app.constants.Constants;
 import com.example.edgar.blog_app.activities.CommentsActivity;
@@ -90,8 +93,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         String postUserId = postList.get(position).getUserId();
 
         if (postUserId.equals(currentUserId)) {
-            holder.deletePostBtn.setVisibility(View.VISIBLE);
-            holder.deletePostBtn.setEnabled(true);
+            holder.postMoreAction.setVisibility(View.VISIBLE);
+            holder.postMoreAction.setEnabled(true);
         }
 
         final String likesUrl = String.format("%s/%s/%s", Constants.POSTS, postId, Constants.LIKES);
@@ -188,17 +191,19 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             }
         });
 
-        //Delete post
-        holder.deletePostBtn.setOnClickListener(new View.OnClickListener() {
+        holder.postMoreAction.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mFirebaseFirestore.collection(Constants.POSTS).document(postId).delete()
-                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                holder.postMoreAction.setImageResource(R.mipmap.ic_expand_less);
+                PopupMenu popup = new PopupMenu(mContext, holder.postMoreAction);
+                MenuInflater inflater = popup.getMenuInflater();
+                inflater.inflate(R.menu.post_menu, popup.getMenu());
+                popup.setOnMenuItemClickListener(new PostItemMoreActionClickListener(position, postId));
+                popup.show();
+                popup.setOnDismissListener(new PopupMenu.OnDismissListener() {
                     @Override
-                    public void onSuccess(Void aVoid) {
-                        postList.remove(position);
-                        userList.remove(position);
-                        notifyDataSetChanged();
+                    public void onDismiss(PopupMenu menu) {
+                        holder.postMoreAction.setImageResource(R.mipmap.ic_expand_more);
                     }
                 });
             }
@@ -250,7 +255,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
         private CircleImageView postUserImageView;
 
-        private Button deletePostBtn;
+        private ImageView postMoreAction;
 
         PostViewHolder(View itemView) {
             super(itemView);
@@ -258,7 +263,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
             postLikeImage = mView.findViewById(R.id.post_like_image);
             postCommentsImageView = mView.findViewById(R.id.post_comments_btn);
-            deletePostBtn = mView.findViewById(R.id.delete_post_btn);
+            postMoreAction = mView.findViewById(R.id.post_more_btn);
         }
 
         void setDescriptionText(String desc) {
@@ -307,6 +312,47 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             postCommentsCount = mView.findViewById(R.id.post_comments_count);
             postCommentsCount.setText(String.format("%s Comments", count));
         }
+    }
+
+    class PostItemMoreActionClickListener implements PopupMenu.OnMenuItemClickListener {
+
+        private int position;
+        private String postId;
+
+        PostItemMoreActionClickListener(int positon, String postId) {
+            this.position=positon;
+            this.postId = postId;
+        }
+
+        @Override
+        public boolean onMenuItemClick(MenuItem menuItem) {
+            switch (menuItem.getItemId()) {
+
+                case R.id.delete_post:
+                    mFirebaseFirestore.collection(Constants.POSTS).document(postId).delete()
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        postList.remove(position);
+                        userList.remove(position);
+                        notifyDataSetChanged();
+                    }
+                });
+                    return true;
+                case R.id.edit_post:
+                    Intent intent = new Intent(mContext, PostActivity.class);
+                    intent.putExtra(Constants.DESC, postList.get(position).getDescription());
+                    intent.putExtra(Constants.IMAGE_URL, postList.get(position).getImageUrl());
+                    intent.putExtra(Constants.POST_ID, postId);
+                    mContext.startActivity(intent);
+                    return true;
+
+                default:
+            }
+
+            return false;
+        }
+
     }
 
 }

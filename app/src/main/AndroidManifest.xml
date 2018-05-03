@@ -62,9 +62,9 @@
             android:theme="@style/AppTheme.Light.NoActionBar" />
         <activity
             android:name=".activities.PostMoreInfoActivity"
-            android:screenOrientation="portrait"
             android:label="Post"
-            android:parentActivityName=".activities.MainActivity"/>
+            android:parentActivityName=".activities.MainActivity"
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>

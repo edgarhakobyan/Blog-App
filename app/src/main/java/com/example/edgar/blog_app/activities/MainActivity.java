@@ -437,7 +437,7 @@ public class MainActivity extends AppCompatActivity
                                         if (task.isSuccessful()) {
                                             User user = task.getResult().toObject(User.class);
 
-                                            if (post.getDescription().contains(searchingText)) {
+                                            if (post.getDescription().toLowerCase().contains(searchingText.toLowerCase())) {
                                                 searchedPosts.add(post);
                                                 searchedUsers.add(user);
                                             }

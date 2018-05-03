@@ -27,7 +27,7 @@ public class PostMoreInfoActivity extends AppCompatActivity {
         String desc = getIntent().getStringExtra(Constants.DESC);
 
         RequestOptions placeholderRequest = new RequestOptions();
-        placeholderRequest.placeholder(R.drawable.profile_placeholder);
+        placeholderRequest.placeholder(R.drawable.post_placeholder);
         Glide.with(this).setDefaultRequestOptions(placeholderRequest).load(imageUrl).into(postImage);
 
         description.setText(desc);

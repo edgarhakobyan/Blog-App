@@ -1,5 +1,6 @@
 package com.example.edgar.blog_app.activities;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -15,6 +16,8 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.edgar.blog_app.constants.Constants;
 import com.example.edgar.blog_app.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -57,6 +60,7 @@ public class PostActivity extends AppCompatActivity {
 
     private Bitmap compressedImageFile;
 
+    @SuppressLint("CheckResult")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,6 +77,21 @@ public class PostActivity extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
 
         currentUserId = firebaseAuth.getCurrentUser().getUid();
+
+        final String postId = getIntent().getStringExtra(Constants.POST_ID);
+
+        if (null != postId) {
+            String desc = getIntent().getStringExtra(Constants.DESC);
+            String currentImage = getIntent().getStringExtra(Constants.IMAGE_URL);
+
+            postDescription.setText(desc);
+            addPostBtn.setText(R.string.save_post);
+
+            RequestOptions placeholderRequest = new RequestOptions();
+            placeholderRequest.placeholder(R.drawable.post_placeholder);
+            Glide.with(this).setDefaultRequestOptions(placeholderRequest).load(currentImage).into(postImage);
+
+        }
 
         postImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -153,21 +172,34 @@ public class PostActivity extends AppCompatActivity {
                                         postMap.put("userId", currentUserId);
                                         postMap.put("timestamp", FieldValue.serverTimestamp());
 
-                                        firebaseFirestore.collection(Constants.POSTS).add(postMap)
-                                                .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<DocumentReference> task) {
-                                                        if (task.isSuccessful()) {
-                                                            Toast.makeText(PostActivity.this, "Post was added ", Toast.LENGTH_LONG).show();
-                                                            Intent intent = new Intent(PostActivity.this, MainActivity.class);
-                                                            startActivity(intent);
-                                                            finish();
-                                                        } else {
-
-                                                        }
-                                                        postProgress.setVisibility(View.INVISIBLE);
+                                        if (postId != null) {
+                                            firebaseFirestore.collection(Constants.POSTS).document(postId).update(postMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    if (task.isSuccessful()) {
+                                                        Toast.makeText(PostActivity.this, "Post was updated ", Toast.LENGTH_LONG).show();
+                                                        Intent intent = new Intent(PostActivity.this, MainActivity.class);
+                                                        startActivity(intent);
+                                                        finish();
                                                     }
-                                                });
+                                                    postProgress.setVisibility(View.INVISIBLE);
+                                                }
+                                            });
+                                        } else {
+                                            firebaseFirestore.collection(Constants.POSTS).add(postMap)
+                                                    .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<DocumentReference> task) {
+                                                            if (task.isSuccessful()) {
+                                                                Toast.makeText(PostActivity.this, "Post was added ", Toast.LENGTH_LONG).show();
+                                                                Intent intent = new Intent(PostActivity.this, MainActivity.class);
+                                                                startActivity(intent);
+                                                                finish();
+                                                            }
+                                                            postProgress.setVisibility(View.INVISIBLE);
+                                                        }
+                                                    });
+                                        }
                                     }
                                 }).addOnFailureListener(new OnFailureListener() {
                                     @Override

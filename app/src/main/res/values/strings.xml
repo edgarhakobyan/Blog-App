@@ -66,4 +66,9 @@
     <!--Post item activity-->
     <string name="post_item_image">Post item image</string>
 
+    <!--Post actions-->
+    <string name="delete_post_title">Delete Post</string>
+    <string name="editpost_title">Edit Post</string>
+    <string name="save_post">Save Post</string>
+
 </resources>
