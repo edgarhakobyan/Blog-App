@@ -28,4 +28,8 @@ public class Constants {
     //Comments
     public static final String COMMENTS = "Comments";
     public static final String MESSAGE = "message";
+
+    //Post More Info
+    public static final String IMAGE_URL = "imageUrl";
+    public static final String DESC = "description";
 }

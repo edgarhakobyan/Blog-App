@@ -49,9 +49,11 @@
     <string name="add_description">Add description</string>
     <string name="add_post">Add Post</string>
     <string name="post_image">Post image</string>
+
+    <!--Navigation bar-->
     <string name="nav_home_title">Home</string>
     <string name="nav_notifications_title">Notifications</string>
-    <string name="nav_account_title">Account</string>
+    <string name="nav_account_title">My Account</string>
     <string name="search">Search</string>
     <string name="voice_search">Voice Search</string>
     <string name="default_user_name">User name</string>
@@ -60,5 +62,8 @@
     <string name="forgot_your_password">Forgot your password ?</string>
     <string name="forgot_password_instruction">To reset password, enter your email, press the button and check mail to follow instruction</string>
     <string name="reset_password">Reset Password</string>
+
+    <!--Post item activity-->
+    <string name="post_item_image">Post item image</string>
 
 </resources>

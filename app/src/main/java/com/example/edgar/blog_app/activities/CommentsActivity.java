@@ -67,23 +67,24 @@ public class CommentsActivity extends AppCompatActivity {
 
         postId = getIntent().getStringExtra(Constants.POST_ID);
 
+        final String commentsPath = String.format("%s/%s/%s", Constants.POSTS, postId, Constants.COMMENTS);
+
         //RecyclerView Get Comments
-        firebaseFirestore.collection(Constants.POSTS + "/" + postId + "/" + Constants.COMMENTS)
-                .addSnapshotListener(this, new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
-                        if (!queryDocumentSnapshots.isEmpty()) {
-                            for (DocumentChange doc: queryDocumentSnapshots.getDocumentChanges()) {
-                                if (doc.getType() == DocumentChange.Type.ADDED) {
-                                    String commentId = doc.getDocument().getId();
-                                    Comment comment = doc.getDocument().toObject(Comment.class);
-                                    mComments.add(comment);
-                                    mCommentsAdapter.notifyDataSetChanged();
-                                }
-                            }
+        firebaseFirestore.collection(commentsPath).addSnapshotListener(this, new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
+                if (!queryDocumentSnapshots.isEmpty()) {
+                    for (DocumentChange doc: queryDocumentSnapshots.getDocumentChanges()) {
+                        if (doc.getType() == DocumentChange.Type.ADDED) {
+                            String commentId = doc.getDocument().getId();
+                            Comment comment = doc.getDocument().toObject(Comment.class);
+                            mComments.add(comment);
+                            mCommentsAdapter.notifyDataSetChanged();
                         }
                     }
-                });
+                }
+            }
+        });
 
         // Add new comment
         postCommentBtn.setOnClickListener(new View.OnClickListener() {
@@ -97,19 +98,17 @@ public class CommentsActivity extends AppCompatActivity {
                     commentsMap.put(Constants.USER_ID, currentUserId);
                     commentsMap.put(Constants.TIMESTAMP, FieldValue.serverTimestamp());
 
-                    firebaseFirestore.collection(Constants.POSTS + "/" + postId + "/" + Constants.COMMENTS).add(commentsMap)
-                            .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                                @Override
-                                public void onComplete(@NonNull Task<DocumentReference> task) {
-                                    if (task.isSuccessful()) {
-                                        commentField.setText("");
-                                    } else {
-                                        Toast.makeText(CommentsActivity.this, "Error while posting comments: ", Toast.LENGTH_LONG).show();
-                                    }
-                                }
-                            });
+                    firebaseFirestore.collection(commentsPath).add(commentsMap).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentReference> task) {
+                            if (task.isSuccessful()) {
+                                commentField.setText("");
+                            } else {
+                                Toast.makeText(CommentsActivity.this, "Error while posting comments: ", Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    });
                 }
-
 
             }
         });

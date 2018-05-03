@@ -32,12 +32,12 @@
         <activity android:name=".activities.UserActivity" />
         <activity
             android:name=".activities.RegisterActivity"
-            android:theme="@style/AppTheme.Light.NoActionBar"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.Light.NoActionBar" />
         <activity
             android:name=".activities.LoginActivity"
-            android:theme="@style/AppTheme.Light.NoActionBar"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.Light.NoActionBar" />
         <activity
             android:name=".activities.SetupActivity"
             android:label="Account Setup"
@@ -58,9 +58,13 @@
         <activity android:name=".activities.NotificationActivity" />
         <activity
             android:name=".activities.ResetPasswordActivity"
-            android:theme="@style/AppTheme.Light.NoActionBar"
-            android:screenOrientation="portrait"/>
-
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.Light.NoActionBar" />
+        <activity
+            android:name=".activities.PostMoreInfoActivity"
+            android:screenOrientation="portrait"
+            android:label="Post"
+            android:parentActivityName=".activities.MainActivity"/>
     </application>
 
 </manifest>

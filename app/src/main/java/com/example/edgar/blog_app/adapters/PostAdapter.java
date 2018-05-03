@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.example.edgar.blog_app.activities.PostMoreInfoActivity;
 import com.example.edgar.blog_app.constants.Constants;
 import com.example.edgar.blog_app.activities.CommentsActivity;
 import com.example.edgar.blog_app.models.Post;
@@ -34,7 +35,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -80,10 +80,10 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         final String postId = postList.get(position).PostId;
         final String currentUserId = Objects.requireNonNull(mFirebaseAuth.getCurrentUser()).getUid();
 
-        String desc = postList.get(position).getDescription();
+        final String desc = postList.get(position).getDescription();
         holder.setDescriptionText(desc);
 
-        String imageUrl = postList.get(position).getImageUrl();
+        final String imageUrl = postList.get(position).getImageUrl();
         String thumbUri = postList.get(position).getImageThumb();
         holder.setPostImage(imageUrl, thumbUri);
 
@@ -97,12 +97,10 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         final String likesUrl = String.format("%s/%s/%s", Constants.POSTS, postId, Constants.LIKES);
         final String commentsUrl = String.format("%s/%s/%s", Constants.POSTS, postId, Constants.COMMENTS);
 
-
         String userName = userList.get(position).getName();
         String userImage = userList.get(position).getImage();
         holder.setUserName(userName);
         holder.setUserImage(userImage);
-
 
         try {
             long milliseconds = postList.get(position).getTimestamp().getTime();
@@ -194,16 +192,41 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         holder.deletePostBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mFirebaseFirestore.collection(Constants.POSTS).document(postId).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                mFirebaseFirestore.collection(Constants.POSTS).document(postId).delete()
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
                         postList.remove(position);
                         userList.remove(position);
+                        notifyDataSetChanged();
                     }
                 });
             }
         });
 
+        //Open Post More Info
+        holder.postDescriptionView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openPostMoreInfoPage(imageUrl, desc);
+            }
+        });
+
+        //Open Post More Info
+        holder.postImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openPostMoreInfoPage(imageUrl, desc);
+            }
+        });
+
+    }
+
+    private void openPostMoreInfoPage(String imageUrl, String desc) {
+        Intent intent = new Intent(mContext, PostMoreInfoActivity.class);
+        intent.putExtra(Constants.IMAGE_URL, imageUrl);
+        intent.putExtra(Constants.DESC, desc);
+        mContext.startActivity(intent);
     }
 
     @Override
