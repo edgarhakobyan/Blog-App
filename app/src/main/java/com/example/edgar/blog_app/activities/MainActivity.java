@@ -232,9 +232,6 @@ public class MainActivity extends AppCompatActivity
                 break;
             case R.id.nav_gallery:
                 break;
-            case R.id.nav_notification:
-                sendToNotification();
-                break;
             case R.id.nav_account:
                 sendToAccount();
                 break;
@@ -395,11 +392,6 @@ public class MainActivity extends AppCompatActivity
 
     private void sendToSetup() {
         Intent intent = new Intent(MainActivity.this, SetupActivity.class);
-        startActivity(intent);
-    }
-
-    private void sendToNotification() {
-        Intent intent = new Intent(MainActivity.this, NotificationActivity.class);
         startActivity(intent);
     }
 
