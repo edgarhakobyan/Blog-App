@@ -137,6 +137,16 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@mipmap/ic_expand_more" />
 
+            <ImageView
+                android:id="@+id/post_favorite_image"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="16dp"
+                app:layout_constraintStart_toEndOf="@+id/post_like_count"
+                app:layout_constraintTop_toBottomOf="@+id/post_description"
+                app:srcCompat="@mipmap/ic_favourite_gray" />
+
         </android.support.constraint.ConstraintLayout>
 
     </android.support.v7.widget.CardView>

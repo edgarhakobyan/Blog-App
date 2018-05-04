@@ -9,13 +9,9 @@
             android:icon="@drawable/ic_home_black_24dp"
             android:title="@string/nav_home_title" />
         <item
-            android:id="@+id/nav_gallery"
-            android:icon="@drawable/ic_menu_gallery"
-            android:title="Gallery" />
-        <item
             android:id="@+id/nav_notification"
-            android:icon="@drawable/ic_notifications_black_24dp"
-            android:title="@string/nav_notifications_title" />
+            android:icon="@mipmap/ic_favourite_black"
+            android:title="@string/nav_my_favorite_posts" />
         <item
             android:id="@+id/nav_account"
             android:icon="@drawable/ic_person_black_24dp"

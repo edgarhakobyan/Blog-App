@@ -14,6 +14,7 @@ public class Constants {
     public static final String DESCRIPTION = "description";
     public static final String TIMESTAMP = "timestamp";
     public static final String LIKES = "Likes";
+    public static final String FAVORITES = "Favorites";
 
     // Firebase Storage keys
     public static final String POST_IMAGES = "postImages";

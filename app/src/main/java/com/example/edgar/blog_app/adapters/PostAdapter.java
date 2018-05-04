@@ -99,6 +99,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
         final String likesUrl = String.format("%s/%s/%s", Constants.POSTS, postId, Constants.LIKES);
         final String commentsUrl = String.format("%s/%s/%s", Constants.POSTS, postId, Constants.COMMENTS);
+        final String favoriteUrl = String.format("%s/%s/%s", Constants.POSTS, postId, Constants.FAVORITES);
 
         String userName = userList.get(position).getName();
         String userImage = userList.get(position).getImage();
@@ -165,6 +166,42 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                 });
             }
         });
+
+        //Get Favorite
+        mFirebaseFirestore.collection(favoriteUrl).document(currentUserId)
+                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(DocumentSnapshot documentSnapshot, FirebaseFirestoreException e) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && documentSnapshot != null) {
+                    if (documentSnapshot.exists()) {
+                        holder.postFavoriteView.setImageDrawable(mContext.getDrawable(R.mipmap.ic_favourite_orange));
+                    } else {
+                        holder.postFavoriteView.setImageDrawable(mContext.getDrawable(R.mipmap.ic_favourite_gray));
+                    }
+                }
+            }
+        });
+
+        //Favorite feature
+        holder.postFavoriteView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mFirebaseFirestore.collection(favoriteUrl).document(currentUserId).get()
+                        .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (!task.getResult().exists()) {
+                            Map<String, Object> favoriteMap = new HashMap<>();
+                            favoriteMap.put(Constants.TIMESTAMP, FieldValue.serverTimestamp());
+                            mFirebaseFirestore.collection(favoriteUrl).document(currentUserId).set(favoriteMap);
+                        } else {
+                            mFirebaseFirestore.collection(favoriteUrl).document(currentUserId).delete();
+                        }
+                    }
+                });
+            }
+        });
+
 
         // Get Comments count
         mFirebaseFirestore.collection(commentsUrl).addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -252,6 +289,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         private ImageView postImageView;
         private ImageView postLikeImage;
         private ImageView postCommentsImageView;
+        private ImageView postFavoriteView;
 
         private CircleImageView postUserImageView;
 
@@ -264,6 +302,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             postLikeImage = mView.findViewById(R.id.post_like_image);
             postCommentsImageView = mView.findViewById(R.id.post_comments_btn);
             postMoreAction = mView.findViewById(R.id.post_more_btn);
+            postFavoriteView = mView.findViewById(R.id.post_favorite_image);
         }
 
         void setDescriptionText(String desc) {

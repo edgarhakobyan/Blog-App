@@ -230,7 +230,8 @@ public class MainActivity extends AppCompatActivity
             case R.id.nav_home:
 
                 break;
-            case R.id.nav_gallery:
+            case R.id.nav_notification:
+                sendToFavorite();
                 break;
             case R.id.nav_account:
                 sendToAccount();
@@ -397,6 +398,11 @@ public class MainActivity extends AppCompatActivity
 
     private void sendToAccount() {
         Intent intent = new Intent(MainActivity.this, AccountActivity.class);
+        startActivity(intent);
+    }
+
+    private void sendToFavorite() {
+        Intent intent = new Intent(MainActivity.this, FavoritePostsActivity.class);
         startActivity(intent);
     }
 
