@@ -10,7 +10,7 @@
             android:title="@string/nav_home_title" />
         <item
             android:id="@+id/nav_notification"
-            android:icon="@mipmap/ic_favourite_black"
+            android:icon="@mipmap/ic_favorite_black"
             android:title="@string/nav_my_favorite_posts" />
         <item
             android:id="@+id/nav_account"

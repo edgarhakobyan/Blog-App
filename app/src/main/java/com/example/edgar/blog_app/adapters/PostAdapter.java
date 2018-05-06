@@ -174,9 +174,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             public void onEvent(DocumentSnapshot documentSnapshot, FirebaseFirestoreException e) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && documentSnapshot != null) {
                     if (documentSnapshot.exists()) {
-                        holder.postFavoriteView.setImageDrawable(mContext.getDrawable(R.mipmap.ic_favourite_orange));
+                        holder.postFavoriteView.setImageDrawable(mContext.getDrawable(R.mipmap.ic_favorite_orange));
                     } else {
-                        holder.postFavoriteView.setImageDrawable(mContext.getDrawable(R.mipmap.ic_favourite_gray));
+                        holder.postFavoriteView.setImageDrawable(mContext.getDrawable(R.mipmap.ic_favorite_gray));
                     }
                 }
             }
@@ -231,18 +231,11 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         holder.postMoreAction.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                holder.postMoreAction.setImageResource(R.mipmap.ic_expand_less);
                 PopupMenu popup = new PopupMenu(mContext, holder.postMoreAction);
                 MenuInflater inflater = popup.getMenuInflater();
                 inflater.inflate(R.menu.post_menu, popup.getMenu());
                 popup.setOnMenuItemClickListener(new PostItemMoreActionClickListener(position, postId));
                 popup.show();
-                popup.setOnDismissListener(new PopupMenu.OnDismissListener() {
-                    @Override
-                    public void onDismiss(PopupMenu menu) {
-                        holder.postMoreAction.setImageResource(R.mipmap.ic_expand_more);
-                    }
-                });
             }
         });
 

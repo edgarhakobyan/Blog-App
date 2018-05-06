@@ -9,6 +9,9 @@
     <!--Comments Activity-->
     <string name="write_a_comment">Write a comment</string>
     <string name="send_comment">Send comment</string>
+    <string name="comments_tag">Comments:</string>
+    <string name="add_comment"> Add Comment</string>
+    <string name="loading_comment">Loading comment …</string>
 
     <!--User Activity-->
     <string name="user_view_image">User view image</string>
@@ -25,13 +28,16 @@
 
     <!--Post item-->
     <string name="comments">Comments</string>
-    <string name="like">Like</string>
-    <string name="dislike">Dislike</string>
-    <string name="like_in_post">Like in post</string>
-    <string name="dislike_in_post">Dislike in post</string>
+    <string name="post_image_desc">Post image</string>
+    <string name="default_likes">0 Likes</string>
+    <string name="default_comments">0 Comments</string>
+    <string name="more_button_desc">More button</string>
+    <string name="post_favorite_image_desc">Post favorite image</string>
+    <string name="post_comments_image_desc">Post comments image</string>
+    <string name="post_like_image_desc">Post like image</string>
 
     <!--Login/Register page-->
-    <string name="welcome_to_photo_blog">Welcome To Blog</string>
+    <string name="welcome_to_photo_blog">Welcome To Kitchen \n Blog</string>
     <string name="your_email">Your email…</string>
     <string name="password">Password…</string>
     <string name="login_btn_title">LogIn</string>
@@ -62,6 +68,7 @@
     <string name="forgot_your_password">Forgot your password ?</string>
     <string name="forgot_password_instruction">To reset password, enter your email, press the button and check mail to follow instruction</string>
     <string name="reset_password">Reset Password</string>
+    <string name="back_to_login">Back</string>
 
     <!--Post item activity-->
     <string name="post_item_image">Post item image</string>
