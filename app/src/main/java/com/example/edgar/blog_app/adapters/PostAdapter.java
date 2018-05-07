@@ -4,6 +4,8 @@ package com.example.edgar.blog_app.adapters;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -28,6 +30,7 @@ import com.example.edgar.blog_app.models.Post;
 import com.example.edgar.blog_app.R;
 import com.example.edgar.blog_app.models.User;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -152,16 +155,19 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                         .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (isOnline()) {
+                            if (!task.getResult().exists()) {
+                                Map<String, Object> likesMap = new HashMap<>();
+                                likesMap.put(Constants.TIMESTAMP, FieldValue.serverTimestamp());
 
-                        if (!task.getResult().exists()) {
-                            Map<String, Object> likesMap = new HashMap<>();
-                            likesMap.put(Constants.TIMESTAMP, FieldValue.serverTimestamp());
+                                mFirebaseFirestore.collection(likesUrl).document(currentUserId).set(likesMap);
+                            } else {
+                                mFirebaseFirestore.collection(likesUrl).document(currentUserId).delete();
+                            }
 
-                            mFirebaseFirestore.collection(likesUrl).document(currentUserId).set(likesMap);
                         } else {
-                            mFirebaseFirestore.collection(likesUrl).document(currentUserId).delete();
+                            Toast.makeText(mContext, "Please connect to the internet!!! ", Toast.LENGTH_SHORT).show();
                         }
-
                     }
                 });
             }
@@ -190,12 +196,16 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                         .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (!task.getResult().exists()) {
-                            Map<String, Object> favoriteMap = new HashMap<>();
-                            favoriteMap.put(Constants.TIMESTAMP, FieldValue.serverTimestamp());
-                            mFirebaseFirestore.collection(favoriteUrl).document(currentUserId).set(favoriteMap);
+                        if (isOnline()) {
+                            if (!task.getResult().exists()) {
+                                Map<String, Object> favoriteMap = new HashMap<>();
+                                favoriteMap.put(Constants.TIMESTAMP, FieldValue.serverTimestamp());
+                                mFirebaseFirestore.collection(favoriteUrl).document(currentUserId).set(favoriteMap);
+                            } else {
+                                mFirebaseFirestore.collection(favoriteUrl).document(currentUserId).delete();
+                            }
                         } else {
-                            mFirebaseFirestore.collection(favoriteUrl).document(currentUserId).delete();
+                            Toast.makeText(mContext, "Please connect to the internet!!! ", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -262,6 +272,15 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         intent.putExtra(Constants.IMAGE_URL, imageUrl);
         intent.putExtra(Constants.DESC, desc);
         mContext.startActivity(intent);
+    }
+
+    private boolean isOnline() {
+        ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm == null) {
+            return false;
+        }
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
     @Override

@@ -1,11 +1,15 @@
 package com.example.edgar.blog_app.activities;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.example.edgar.blog_app.R;
 import com.example.edgar.blog_app.adapters.PostAdapter;
@@ -77,20 +81,24 @@ public class FavoritePostsActivity extends AppCompatActivity {
                                     .document(currentUserId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                                 @Override
                                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                    if (task.getResult().exists()) {
-                                        mFirebaseFirestore.collection(Constants.USERS).document(blogUserId).get()
-                                                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                                if (task.isSuccessful()) {
-                                                    User user = task.getResult().toObject(User.class);
-                                                    postList.add(post);
-                                                    userList.add(user);
+                                    if (isOnline()) {
+                                        if (task.getResult().exists()) {
+                                            mFirebaseFirestore.collection(Constants.USERS).document(blogUserId).get()
+                                                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                                            if (task.isSuccessful()) {
+                                                                User user = task.getResult().toObject(User.class);
+                                                                postList.add(post);
+                                                                userList.add(user);
 
-                                                    mPostAdapter.notifyDataSetChanged();
-                                                }
-                                            }
-                                        });
+                                                                mPostAdapter.notifyDataSetChanged();
+                                                            }
+                                                        }
+                                                    });
+                                        }
+                                    } else {
+                                        Toast.makeText(FavoritePostsActivity.this, "Please connect to the internet!!! ", Toast.LENGTH_SHORT).show();
                                     }
                                 }
                             });
@@ -113,5 +121,14 @@ public class FavoritePostsActivity extends AppCompatActivity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private boolean isOnline() {
+        ConnectivityManager cm = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm == null) {
+            return false;
+        }
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 }
