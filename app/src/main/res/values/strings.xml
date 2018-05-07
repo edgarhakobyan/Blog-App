@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Blog-App</string>
+    <string name="app_name">Kitchen Blog</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -10,7 +10,7 @@
     <string name="write_a_comment">Write a comment</string>
     <string name="send_comment">Send comment</string>
     <string name="comments_tag">Comments:</string>
-    <string name="add_comment"> Add Comment</string>
+    <string name="add_comment"> Write a comment…</string>
     <string name="loading_comment">Loading comment …</string>
 
     <!--User Activity-->

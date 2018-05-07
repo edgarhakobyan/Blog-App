@@ -24,6 +24,7 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
@@ -42,9 +43,10 @@ public class CommentsActivity extends AppCompatActivity {
     private String postId;
     private String currentUserId;
 
-    private static ArrayList<Comment> mComments;
+    private ArrayList<Comment> mComments;
     private CommentsAdapter mCommentsAdapter;
 
+    private Boolean isFirstLoad = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +72,9 @@ public class CommentsActivity extends AppCompatActivity {
         final String commentsPath = String.format("%s/%s/%s", Constants.POSTS, postId, Constants.COMMENTS);
 
         //RecyclerView Get Comments
-        firebaseFirestore.collection(commentsPath).addSnapshotListener(this, new EventListener<QuerySnapshot>() {
+        firebaseFirestore.collection(commentsPath)
+                .orderBy(Constants.TIMESTAMP, Query.Direction.DESCENDING)
+                .addSnapshotListener(this, new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
                 if (!queryDocumentSnapshots.isEmpty()) {
@@ -78,10 +82,15 @@ public class CommentsActivity extends AppCompatActivity {
                         if (doc.getType() == DocumentChange.Type.ADDED) {
                             String commentId = doc.getDocument().getId();
                             Comment comment = doc.getDocument().toObject(Comment.class);
-                            mComments.add(comment);
+                            if (isFirstLoad) {
+                                mComments.add(comment);
+                            } else {
+                                mComments.add(0, comment);
+                            }
                             mCommentsAdapter.notifyDataSetChanged();
                         }
                     }
+                    isFirstLoad = false;
                 }
             }
         });
