@@ -1,16 +1,12 @@
 package com.example.edgar.blog_app.activities;
 
-import android.annotation.SuppressLint;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
-import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestOptions;
 import com.example.edgar.blog_app.R;
 import com.example.edgar.blog_app.adapters.PostAdapter;
 import com.example.edgar.blog_app.constants.Constants;
@@ -30,8 +26,6 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.hdodenhof.circleimageview.CircleImageView;
-
 public class AccountActivity extends AppCompatActivity {
 
     private List<Post> postList;
@@ -42,9 +36,6 @@ public class AccountActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private FirebaseFirestore mFirebaseFirestore;
-
-    private CircleImageView accountImage;
-    private TextView accountName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,21 +56,6 @@ public class AccountActivity extends AppCompatActivity {
         if (mAuth.getCurrentUser() != null) {
 
             String currentUserId = mAuth.getCurrentUser().getUid();
-
-            //Get user name and image
-            mFirebaseFirestore.collection(Constants.USERS).document(currentUserId).get()
-                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            if (task.isSuccessful()) {
-                                String userName = task.getResult().getString(Constants.NAME);
-                                String userImage = task.getResult().getString(Constants.IMAGE);
-                                setUserName(userName);
-                                setUserImage(userImage);
-                            }
-                        }
-                    });
-
 
             // Get posts by order timestamp and user
             Query query = mFirebaseFirestore.collection(Constants.POSTS)
@@ -132,21 +108,6 @@ public class AccountActivity extends AppCompatActivity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    public void setUserName(String name) {
-        accountName = findViewById(R.id.account_name);
-        accountName.setText(name);
-    }
-
-    @SuppressLint("CheckResult")
-    public void setUserImage(String imagePath) {
-        accountImage = findViewById(R.id.account_image);
-
-        RequestOptions placeholderOption = new RequestOptions();
-        placeholderOption.placeholder(R.drawable.profile_placeholder);
-
-        Glide.with(this).applyDefaultRequestOptions(placeholderOption).load(imagePath).into(accountImage);
     }
 
 }

@@ -51,7 +51,7 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".activities.AccountActivity"
-            android:label="My Account"
+            android:label="My Posts"
             android:parentActivityName=".activities.MainActivity"
             android:screenOrientation="portrait" />
         <activity
