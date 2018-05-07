@@ -46,8 +46,6 @@ public class CommentsActivity extends AppCompatActivity {
     private ArrayList<Comment> mComments;
     private CommentsAdapter mCommentsAdapter;
 
-    private Boolean isFirstLoad = true;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,24 +71,18 @@ public class CommentsActivity extends AppCompatActivity {
 
         //RecyclerView Get Comments
         firebaseFirestore.collection(commentsPath)
-                .orderBy(Constants.TIMESTAMP, Query.Direction.DESCENDING)
+                .orderBy(Constants.TIMESTAMP, Query.Direction.ASCENDING)
                 .addSnapshotListener(this, new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(QuerySnapshot queryDocumentSnapshots, FirebaseFirestoreException e) {
                 if (!queryDocumentSnapshots.isEmpty()) {
                     for (DocumentChange doc: queryDocumentSnapshots.getDocumentChanges()) {
                         if (doc.getType() == DocumentChange.Type.ADDED) {
-                            String commentId = doc.getDocument().getId();
                             Comment comment = doc.getDocument().toObject(Comment.class);
-                            if (isFirstLoad) {
-                                mComments.add(comment);
-                            } else {
-                                mComments.add(0, comment);
-                            }
+                            mComments.add(comment);
                             mCommentsAdapter.notifyDataSetChanged();
                         }
                     }
-                    isFirstLoad = false;
                 }
             }
         });
