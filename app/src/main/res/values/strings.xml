@@ -68,7 +68,6 @@
     <string name="forgot_your_password">Forgot your password ?</string>
     <string name="forgot_password_instruction">To reset password, enter your email, press the button and check mail to follow instruction</string>
     <string name="reset_password">Reset Password</string>
-    <string name="back_to_login">Back</string>
 
     <!--Post item activity-->
     <string name="post_item_image">Post item image</string>

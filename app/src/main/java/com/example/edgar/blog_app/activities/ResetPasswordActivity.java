@@ -4,35 +4,28 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.edgar.blog_app.R;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class ResetPasswordActivity extends AppCompatActivity {
-
-    private Button resetPasswordBtn;
-    private EditText resetPasswordEmail;
-    private TextView backToLogin;
-
-    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reset_password);
 
-        mAuth = FirebaseAuth.getInstance();
+        final FirebaseAuth mAuth = FirebaseAuth.getInstance();
 
-        resetPasswordBtn = findViewById(R.id.reset_password_btn);
-        resetPasswordEmail = findViewById(R.id.reset_email_field);
-        backToLogin = findViewById(R.id.back_to_login);
+        Button resetPasswordBtn = findViewById(R.id.reset_password_btn);
+        final EditText resetPasswordEmail = findViewById(R.id.reset_email_field);
 
         resetPasswordBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -41,37 +34,31 @@ public class ResetPasswordActivity extends AppCompatActivity {
                 final String email = resetPasswordEmail.getText().toString();
 
                 if (!TextUtils.isEmpty(email)) {
-
-                    mAuth.sendPasswordResetEmail(email).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    mAuth.sendPasswordResetEmail(email).addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if (task.isSuccessful()) {
-                                Toast.makeText(ResetPasswordActivity.this, "Check email to reset your password!", Toast.LENGTH_SHORT).show();
-                            } else {
-                                String error;
-                                try {
-                                    error = task.getException().getMessage();
-                                } catch (Exception ex) {
-                                    error = "Failed to send reset password email!";
-                                }
-
-                                Toast.makeText(ResetPasswordActivity.this, error, Toast.LENGTH_SHORT).show();
-                            }
+                        public void onSuccess(Void aVoid) {
+                            Toast.makeText(ResetPasswordActivity.this, "Check email to reset your password!",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(ResetPasswordActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
-
                 }
-
             }
         });
+    }
 
-        backToLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
-
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 }
