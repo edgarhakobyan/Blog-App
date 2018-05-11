@@ -90,8 +90,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         holder.setDescriptionText(desc);
 
         final String imageUrl = postList.get(position).getImageUrl();
-        String thumbUri = postList.get(position).getImageThumb();
-        holder.setPostImage(imageUrl, thumbUri);
+        holder.setPostImage(imageUrl);
 
         String postUserId = postList.get(position).getUserId();
 
@@ -323,15 +322,13 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         }
 
         @SuppressLint("CheckResult")
-        void setPostImage(String downloadUrl, String thumbUri) {
+        void setPostImage(String downloadUrl) {
             postImageView = mView.findViewById(R.id.post_image);
 
             RequestOptions placeholderOption = new RequestOptions();
             placeholderOption.placeholder(R.drawable.post_placeholder);
 
-            Glide.with(mContext).applyDefaultRequestOptions(placeholderOption).load(downloadUrl).thumbnail(
-                    Glide.with(mContext).load(thumbUri)
-            ).into(postImageView);
+            Glide.with(mContext).applyDefaultRequestOptions(placeholderOption).load(downloadUrl).into(postImageView);
         }
 
         public void setDate(String date) {

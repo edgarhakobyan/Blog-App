@@ -18,7 +18,6 @@ public class Constants {
 
     // Firebase Storage keys
     public static final String POST_IMAGES = "postImages";
-    public static final String IMAGE_THUMBS = "postImages/thumbs";
 
     // Date format
     public static final String DATE_FORMAT = "MM/dd/yyyy";

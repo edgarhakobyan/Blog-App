@@ -127,9 +127,9 @@ public class SetupActivity extends AppCompatActivity {
 
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         compressedImageFile.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-                        byte[] thumbData = baos.toByteArray();
+                        byte[] imageData = baos.toByteArray();
 
-                        UploadTask imagePath = storageReference.child("profileImages").child(userId + ".jpg").putBytes(thumbData);
+                        UploadTask imagePath = storageReference.child("profileImages").child(userId + ".jpg").putBytes(imageData);
 
                         imagePath.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                             @Override

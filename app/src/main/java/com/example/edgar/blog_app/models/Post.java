@@ -11,16 +11,14 @@ public class Post extends PostId {
     private String userId;
     private String description;
     private String imageUrl;
-    private String imageThumb;
     private Date timestamp;
 
     public Post() {}
 
-    public Post(String userId, String imageUrl, String description, String imageThumb, Date timestamp) {
+    public Post(String userId, String imageUrl, String description, Date timestamp) {
         this.userId = userId;
         this.imageUrl = imageUrl;
         this.description = description;
-        this.imageThumb = imageThumb;
         this.timestamp = timestamp;
     }
 
@@ -34,10 +32,6 @@ public class Post extends PostId {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
-    }
-
-    public void setImageThumb(String imageThumb) {
-        this.imageThumb = imageThumb;
     }
 
     public void setTimestamp(Date timestamp) {
@@ -56,9 +50,6 @@ public class Post extends PostId {
         return imageUrl;
     }
 
-    public String getImageThumb() {
-        return imageThumb;
-    }
 
     public Date getTimestamp() {
         return timestamp;

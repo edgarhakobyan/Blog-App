@@ -118,11 +118,10 @@ public class PostActivity extends AppCompatActivity {
                     // PHOTO UPLOAD
                     File newImageFile = new File(postImageUri.getPath());
                     try {
-
                         compressedImageFile = new Compressor(PostActivity.this)
-                                .setMaxHeight(720)
-                                .setMaxWidth(720)
-                                .setQuality(50)
+                                .setMaxHeight(360)
+                                .setMaxWidth(360)
+                                .setQuality(25)
                                 .compressToBitmap(newImageFile);
 
                     } catch (IOException e) {
@@ -133,85 +132,56 @@ public class PostActivity extends AppCompatActivity {
                     compressedImageFile.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                     byte[] imageData = baos.toByteArray();
 
-                    UploadTask filePath = storageReference.child(Constants.POST_IMAGES).child(randomName + ".jpg")
+                    UploadTask uploadTask = storageReference.child(Constants.POST_IMAGES).child(randomName + ".jpg")
                             .putBytes(imageData);
-                    filePath.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+
+                    uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
-                        public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                            final String downloadUri = Objects.requireNonNull(task.getResult().getDownloadUrl()).toString();
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            String downloadUri = taskSnapshot.getDownloadUrl().toString();
 
-                            if (task.isSuccessful()) {
+                            Map<String, Object> postMap = new HashMap<>();
+                            postMap.put("imageUrl", downloadUri);
+                            postMap.put("description", desc);
+                            postMap.put("userId", currentUserId);
+                            postMap.put("timestamp", FieldValue.serverTimestamp());
 
-                                File newThumbFile = new File(postImageUri.getPath());
-                                try {
-                                    compressedImageFile = new Compressor(PostActivity.this)
-                                            .setMaxHeight(100)
-                                            .setMaxWidth(100)
-                                            .setQuality(1)
-                                            .compressToBitmap(newThumbFile);
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-
-                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                                compressedImageFile.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-                                byte[] thumbData = baos.toByteArray();
-
-
-                                UploadTask uploadTask = storageReference.child(Constants.IMAGE_THUMBS)
-                                        .child(randomName + ".jpg").putBytes(thumbData);
-                                uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            if (postId != null) {
+                                firebaseFirestore.collection(Constants.POSTS).document(postId).update(postMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
-                                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                        String downloadThumbUri = taskSnapshot.getDownloadUrl().toString();
-
-                                        Map<String, Object> postMap = new HashMap<>();
-                                        postMap.put("imageUrl", downloadUri);
-                                        postMap.put("imageThumb", downloadThumbUri);
-                                        postMap.put("description", desc);
-                                        postMap.put("userId", currentUserId);
-                                        postMap.put("timestamp", FieldValue.serverTimestamp());
-
-                                        if (postId != null) {
-                                            firebaseFirestore.collection(Constants.POSTS).document(postId).update(postMap).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<Void> task) {
-                                                    if (task.isSuccessful()) {
-                                                        Toast.makeText(PostActivity.this, "Post was updated ", Toast.LENGTH_LONG).show();
-                                                        Intent intent = new Intent(PostActivity.this, MainActivity.class);
-                                                        startActivity(intent);
-                                                        finish();
-                                                    }
-                                                    postProgress.setVisibility(View.INVISIBLE);
-                                                }
-                                            });
-                                        } else {
-                                            firebaseFirestore.collection(Constants.POSTS).add(postMap)
-                                                    .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                                                        @Override
-                                                        public void onComplete(@NonNull Task<DocumentReference> task) {
-                                                            if (task.isSuccessful()) {
-                                                                Toast.makeText(PostActivity.this, "Post was added ", Toast.LENGTH_LONG).show();
-                                                                Intent intent = new Intent(PostActivity.this, MainActivity.class);
-                                                                startActivity(intent);
-                                                                finish();
-                                                            }
-                                                            postProgress.setVisibility(View.INVISIBLE);
-                                                        }
-                                                    });
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if (task.isSuccessful()) {
+                                            Toast.makeText(PostActivity.this, "Post was updated ", Toast.LENGTH_LONG).show();
+                                            Intent intent = new Intent(PostActivity.this, MainActivity.class);
+                                            startActivity(intent);
+                                            finish();
                                         }
-                                    }
-                                }).addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        //Error handling
+                                        postProgress.setVisibility(View.INVISIBLE);
                                     }
                                 });
-
+                            } else {
+                                firebaseFirestore.collection(Constants.POSTS).add(postMap).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<DocumentReference> task) {
+                                        if (task.isSuccessful()) {
+                                            Toast.makeText(PostActivity.this, "Post was added ", Toast.LENGTH_LONG).show();
+                                            Intent intent = new Intent(PostActivity.this, MainActivity.class);
+                                            startActivity(intent);
+                                            finish();
+                                        }
+                                        postProgress.setVisibility(View.INVISIBLE);
+                                    }
+                                });
                             }
-
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            //Error handling
                         }
                     });
+
+
                 } else {
                     postProgress.setVisibility(View.INVISIBLE);
                 }
