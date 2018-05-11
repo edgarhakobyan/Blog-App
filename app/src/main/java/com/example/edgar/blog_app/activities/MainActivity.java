@@ -1,5 +1,6 @@
 package com.example.edgar.blog_app.activities;
 
+import android.annotation.SuppressLint;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.Bundle;
@@ -42,7 +43,6 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -50,11 +50,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    FloatingActionButton addPostBtn;
-
     private RecyclerView mPostListView;
-
-    private SearchView searchView;
 
     private List<Post> postList;
     private List<User> userList;
@@ -67,10 +63,6 @@ public class MainActivity extends AppCompatActivity
     private DocumentSnapshot lastVisible;
 
     private Boolean isFirstPageFirstLoad = true;
-
-    private CircleImageView userHeaderImage;
-    private TextView userHeaderName;
-    private TextView userHeaderEmail;
 
     private static boolean isSearchedListShown = false;
 
@@ -89,7 +81,7 @@ public class MainActivity extends AppCompatActivity
         mAuth = FirebaseAuth.getInstance();
         mFirebaseFirestore = FirebaseFirestore.getInstance();
 
-        addPostBtn = findViewById(R.id.fab);
+        FloatingActionButton addPostBtn = findViewById(R.id.fab);
         addPostBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -166,7 +158,7 @@ public class MainActivity extends AppCompatActivity
         getMenuInflater().inflate(R.menu.main, menu);
 
         MenuItem searchItem = menu.findItem(R.id.action_search);
-        searchView = (SearchView) searchItem.getActionView();
+        final SearchView searchView = (SearchView) searchItem.getActionView();
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
@@ -455,13 +447,14 @@ public class MainActivity extends AppCompatActivity
 
     private void changeNavigationHeader() {
 
-        userHeaderName = findViewById(R.id.user_header_name);
-        userHeaderImage = findViewById(R.id.user_header_image);
-        userHeaderEmail = findViewById(R.id.user_header_email);
+        final CircleImageView userHeaderImage = findViewById(R.id.user_header_image);
+        final TextView userHeaderName = findViewById(R.id.user_header_name);
+        TextView userHeaderEmail = findViewById(R.id.user_header_email);
 
         String currentUserId = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         mFirebaseFirestore.collection(Constants.USERS).document(currentUserId).get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @SuppressLint("CheckResult")
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         if (task.isSuccessful()) {
