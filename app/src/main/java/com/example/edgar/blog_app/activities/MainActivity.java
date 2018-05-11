@@ -502,7 +502,7 @@ public class MainActivity extends AppCompatActivity
                             userHeaderName.setText(userName);
 
                             RequestOptions placeholderOption = new RequestOptions();
-                            placeholderOption.placeholder(R.mipmap.ic_launcher_round);
+                            placeholderOption.placeholder(R.drawable.profile_placeholder);
 
                             Glide.with(MainActivity.this).applyDefaultRequestOptions(placeholderOption).load(userImage).into(userHeaderImage);
                         }
