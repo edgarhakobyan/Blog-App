@@ -10,6 +10,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.view.MenuInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -19,6 +20,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -196,18 +198,14 @@ public class MainActivity extends AppCompatActivity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_voice_search) {
-            Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-//            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "hy_AM");
-//            intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Hi Edgar");
-            try {
-                startActivityForResult(intent,200);
-            } catch (ActivityNotFoundException ex) {
-                Toast.makeText(getApplicationContext(), "Intent problem", Toast.LENGTH_SHORT).show();
-            }
+
+            PopupMenu popup = new PopupMenu(this, findViewById(R.id.action_voice_search));
+            MenuInflater inflater = popup.getMenuInflater();
+            inflater.inflate(R.menu.search_languages, popup.getMenu());
+            popup.setOnMenuItemClickListener(new SearchLanguageClickListener());
+            popup.show();
+
             return true;
         }
 
@@ -254,6 +252,46 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(MainActivity.this, searchedText, Toast.LENGTH_LONG).show();
             showSearchedPosts(searchedText);
             isSearchedListShown = true;
+        }
+    }
+
+    private class SearchLanguageClickListener implements PopupMenu.OnMenuItemClickListener {
+
+        SearchLanguageClickListener() {}
+
+        @Override
+        public boolean onMenuItemClick(MenuItem menuItem) {
+            switch (menuItem.getItemId()) {
+
+                case R.id.lang_arm:
+                    startVoiceSearch(Constants.LANG_ARM);
+                    return true;
+                case R.id.lang_eng:
+                    startVoiceSearch(Constants.LANG_ENG);
+                    return true;
+                case R.id.lang_rus:
+                    startVoiceSearch(Constants.LANG_RUS);
+                    return true;
+
+                default:
+                    break;
+            }
+
+            return false;
+        }
+
+    }
+
+    private void startVoiceSearch(String lang) {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, lang);
+//        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "");
+
+        try {
+            startActivityForResult(intent,200);
+        } catch (ActivityNotFoundException ex) {
+            Toast.makeText(getApplicationContext(), "Intent problem", Toast.LENGTH_SHORT).show();
         }
     }
 

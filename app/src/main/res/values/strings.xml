@@ -78,4 +78,9 @@
     <string name="editpost_title">Edit Post</string>
     <string name="save_post">Save Post</string>
 
+    <!--Search languages-->
+    <string name="lang_arm_title">Հայերեն</string>
+    <string name="lang_eng_title">English</string>
+    <string name="lang_rus_title">Русский</string>
+
 </resources>

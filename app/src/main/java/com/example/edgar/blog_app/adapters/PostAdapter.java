@@ -367,8 +367,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         private int position;
         private String postId;
 
-        PostItemMoreActionClickListener(int positon, String postId) {
-            this.position=positon;
+        PostItemMoreActionClickListener(int position, String postId) {
+            this.position = position;
             this.postId = postId;
         }
 

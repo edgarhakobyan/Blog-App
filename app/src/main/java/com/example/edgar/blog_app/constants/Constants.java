@@ -32,4 +32,10 @@ public class Constants {
     //Post More Info
     public static final String IMAGE_URL = "imageUrl";
     public static final String DESC = "description";
+
+    //Search Languages
+    public static final String LANG_ARM = "hy_AM";
+    public static final String LANG_ENG = "en_GB";
+    public static final String LANG_RUS = "ru_RU";
+
 }
