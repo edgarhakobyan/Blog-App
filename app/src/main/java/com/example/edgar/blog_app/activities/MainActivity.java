@@ -442,11 +442,19 @@ public class MainActivity extends AppCompatActivity
         final ArrayList<Post> searchedPosts = new ArrayList<>();
         final List<User> searchedUsers = new ArrayList<>();
 
+        int firstSymbol = searchingText.codePointAt(0);
+        String searchingTextWithEnglishSymbols = null;
+        if (firstSymbol >= 0x0520 && firstSymbol <= 0x0580) {
+            searchingTextWithEnglishSymbols = changeStringFromArmenianToEnglish(searchingText);
+        }
+
         mPostAdapter = new PostAdapter(searchedPosts, searchedUsers);
 
         mPostListView = findViewById(R.id.post_list_view);
         mPostListView.setLayoutManager(new LinearLayoutManager(this));
         mPostListView.setAdapter(mPostAdapter);
+
+        final String finalSearchingTextWithEnglishSymbols = searchingTextWithEnglishSymbols;
 
         mFirebaseFirestore.collection(Constants.POSTS).addSnapshotListener(this, new EventListener<QuerySnapshot>() {
             @Override
@@ -467,7 +475,13 @@ public class MainActivity extends AppCompatActivity
                                         if (task.isSuccessful()) {
                                             User user = task.getResult().toObject(User.class);
 
-                                            if (post.getDescription().toLowerCase().contains(searchingText.toLowerCase())) {
+                                            String postDesc = post.getDescription().toLowerCase();
+
+                                            if (postDesc.contains(searchingText.toLowerCase())) {
+                                                searchedPosts.add(post);
+                                                searchedUsers.add(user);
+                                            } else if (finalSearchingTextWithEnglishSymbols != null
+                                                    && postDesc.contains(finalSearchingTextWithEnglishSymbols.toLowerCase())) {
                                                 searchedPosts.add(post);
                                                 searchedUsers.add(user);
                                             }
@@ -510,6 +524,24 @@ public class MainActivity extends AppCompatActivity
                 });
         String email = mAuth.getCurrentUser().getEmail();
         userHeaderEmail.setText(email);
+    }
+
+    private String changeStringFromArmenianToEnglish(String word) {
+
+        return word.replace("ա", "a").replace("բ", "b")
+                .replace("գ", "g").replace("դ", "d").replace("ե", "e")
+                .replace("զ", "z").replace("է", "e").replace("ը", "@")
+                .replace("թ", "t").replace("ժ", "zh").replace("ի", "i")
+                .replace("լ", "l").replace("խ", "x").replace("ծ", "c")
+                .replace("կ", "k").replace("հ", "h").replace("ձ", "c")
+                .replace("ղ", "x").replace("ճ", "ch").replace("մ", "m")
+                .replace("յ", "y").replace("ն", "n").replace("շ", "sh")
+                .replace("ո", "o").replace("չ", "ch").replace("պ", "p")
+                .replace("ջ", "j").replace("ռ", "r").replace("ս", "s")
+                .replace("վ", "v").replace("տ", "t").replace("ր", "r")
+                .replace("ց", "c").replace("ու", "u").replace("փ", "p")
+                .replace("ք", "q").replace("և", "ev").replace("օ", "o")
+                .replace("ֆ", "f");
     }
 
 }

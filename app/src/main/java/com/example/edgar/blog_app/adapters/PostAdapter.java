@@ -113,7 +113,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             String dateString = DateFormat.format(Constants.DATE_FORMAT, new Date(milliseconds)).toString();
             holder.setDate(dateString);
         } catch (Exception e) {
-            Toast.makeText(mContext, "Exception : " + e.getMessage(), Toast.LENGTH_SHORT).show();
+//            Toast.makeText(mContext, "Exception : " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            System.out.println("Exception : " + e.getMessage());
         }
 
         // Get Likes count
